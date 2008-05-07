@@ -2,7 +2,7 @@
 
 class Greeter
     def initialize(name = "world")
-        @name = name
+        @name = name.capitalize
     end
     def say_hi
         puts "Hi #{@name}!"
@@ -13,7 +13,7 @@ class Greeter
 end
 
 if __FILE__ == $0
-    greet = Greeter.new
+    greet = Greeter.new("griflet")
     greet.say_hi
     greet.say_bye
 end
