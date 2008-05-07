@@ -11,3 +11,9 @@ class Greeter
         puts "Bye #{@name}, come back soon."
     end
 end
+
+if __FILE__ == $0
+    greet = Greeter.new
+    greet.say_hi
+    greet.say_bye
+end
