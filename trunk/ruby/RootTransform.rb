@@ -58,6 +58,7 @@ HEAD
     
 batchfoot = <<FOOT
 )
+pause
 @echo on
 FOOT
 
