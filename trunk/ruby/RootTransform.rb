@@ -36,7 +36,7 @@ class IsTheRootStringToTransform
       subhash = buildHashOfSubs(tokens)
       subhash.each { |match, sub| filecontent.replace filecontent.gsub(match, sub) }
       
-      mytrgfile = File.new(filename + "_" + @j.to_s + ".dat", "w")
+      mytrgfile = File.new(filename + "_" + @j.to_s.rjust(3,"0")  + ".dat", "w")
       mytrgfile.puts filecontent
       mytrgfile.close
       
