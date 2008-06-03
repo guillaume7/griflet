@@ -53,7 +53,12 @@ class IsTheActionToPerformWith
     puts "Running #{@batchfilename}..."
   end
   
-  #Method 1
+  #Running
+  def ning
+    ing
+  end
+
+#Method 1
   def usesTheFollowingBatchfileNameAndBlock(batchfilename)
     
     @batchfilename = batchfilename
