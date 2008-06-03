@@ -1,36 +1,39 @@
-class IsTheRootStringToTransform
+class IsTheActionToPerformWith
   
-  attr_reader :rootfilecontent, :list, :matches 
-  attr_reader :matchexpr, :j, :outfilename, :batch
+  attr_reader :patterncontent, :listofsubs
+  attr_reader :matchline, :batch
   
-  def initialize (rootstring, list)
-    @rootfilecontent, @list = rootstring, list
-    @list = @list.to_a if !@list.is_a?(Array)
-    @matchexpr = @list.shift
-    @matches = @matchexpr.tr('()','').split(' ')
-    @closings = @matchexpr.gsub(/\(.+?\)/, '*').split(/\*| /)
+  def initialize (patterncontent, listofsubs)
+    @patterncontent, @listofsubs = patterncontent, listofsubs
+    @listofsubs = @listofsubs.to_a if !@listofsubs.is_a?(Array)
+    @matchline = @listofsubs.shift
+    @matches = @matchline.tr('()','').split(' ')
+    @closings = @matchline.gsub(/\(.+?\)/, '*').split(/\*| /)
     puts @closings.join(' ')
   end
   
-  def isTransformedByTheBlock
+  #private
+  def thePatternIsTransformedByTheBlock
     @j = 1
-    @list.each do |line|
+    @listofsubs.each do |line|
       yield line
       @j = @j + 1
     end
   end
   
+  #private
   def buildHashOfSubs(array)
     hash = Hash.new
     array.size.times { |i| hash.store(@matches[i], @closings[2*i].chomp + array[i] + @closings[2*i + 1].chomp) }
     return hash
   end
   
-  def isTransformedIntoFile(filename)
+  def usesTransformedFilesNamedAfter(filename)
+    
     
     @outfilename = filename
-    isTransformedByTheBlock{ |line|    
-      filecontent = String.new( @rootfilecontent )
+    thePatternIsTransformedByTheBlock{ |line|    
+      filecontent = String.new( @patterncontent )
       
       tokens = line.split( ' ' )
       subhash = buildHashOfSubs(tokens)
@@ -45,55 +48,75 @@ class IsTheRootStringToTransform
     
   end
   
-  def hasTheFollowingBatchFileBlock(batchfilename)
+  #Running
+  def ing
+    puts "Running #{@batchfilename}..."
+  end
+  
+  #Method 1
+  def usesTheFollowingBatchfileNameAndBlock(batchfilename)
+    
+    @batchfilename = batchfilename
     
     @batch = String.new
     
-batchhead = <<HEAD
-@echo off
-for %%i in (#{@outfilename}_*.dat) do (
+    batchhead = <<HEAD
+    @echo off
+    for %%i in (#{@outfilename}_*.dat) do (
 HEAD
 
     yield
     
-batchfoot = <<FOOT
-)
-pause
-@echo on
+    batchfoot = <<FOOT
+    )
+    pause
+    @echo on
 FOOT
 
-    batchfile = File.new(batchfilename, "w")
+    batchfile = File.new(@batchfilename, "w")
     batchfile.puts batchhead + @batch + batchfoot
     batchfile.close
     
   end
+
+  #Method 2
+  def usesAGenericMohidtoolBatchfile(batchfilename, mohidtool, configfilename)
+    usesTheFollowingBatchfileNameAndBlock(batchfilename){
+      @batch = <<BATCH
+      copy %%i #{configfilename}
+      #{mohidtool}
+BATCH
+    }
+  end
   
-#  def usesConvertToHdf5BatchFile(batchfilename)
-#   hasTheFollowingBatchFileBlock(batchfilename){
-#@batch.replace <<BATCH
-#    copy %%i ConvertToHdf5Action.dat
-#    ConvertToHdf5.exe
-#BATCH
-#}
+  #Methods 3
+  def usesAConverttohdf5BatchfileNamed(batchfilename)
+    usesAGenericMohidtoolBatchfile( batchfilename, "ConvertToHdf5.exe", "ConvertToHDF5Action.dat")
+  end
+  
+  def usesAConvert2netcdfBatchfileNamed(batchfilename)
+    usesAGenericMohidtoolBatchfile( batchfilename, "Convert2Netcdf.exe", "Convert2Netcdf.dat")
+  end
+
 end
 
-class IsTheRootFileToTransform < IsTheRootStringToTransform
+class IsTheActionToPerformWithFiles < IsTheActionToPerformWith
   
-  def initialize(rootfilename, listfilename)
+  def initialize(patternfilename, listofsubsfilename)
     
-    if File.exists?(rootfilename) and File.exists?(listfilename) then
+    if File.exists?(patternfilename) and File.exists?(listofsubsfilename) then
       
-      rootfile = File.open(rootfilename)
-      rootstring = String.new( rootfile.read )
+      #patternfile = File.open(patternfilename)
+      patterncontent = String.new( File.open(patternfilename).read )
       
-      listfile = File.open(listfilename)
-      list = String.new( listfile.read )
+      #listofsubsfile = File.open(listofsubsfilename)
+      listofsubs = String.new( File.open(listofsubsfilename).read )
       
-      super(rootstring, list)
+      super(patterncontent, listofsubs)
       
     else
       
-      puts "Error: one or both of #{rootfile} or #{listfile} doesn't exist."
+      puts "Error: one or both of #{patternfilename} or #{listofsubsfilename} doesn't exist."
       
     end
     
@@ -109,47 +132,42 @@ ACTION                   : GLUES HDF5 FILES
 
 OUTPUTFILENAME           : MOHID_WATER_01.hdf5
  
-<<begin_list>>
+<<begin_listofsubs>>
 ..\\Extraction\\Stride_WaterProperties_1.hdf5
 ..\\Extraction\\Stride_WaterProperties_2.hdf5
-<<end_list>>
+<<end_listofsubs>>
 <end_file>
 CONVERTTOHDF5ACTION
 
-mylist = <<LIST
+mylistofsubs = <<listofsubs
 _(01) s_(1). s_(2). (WATER) (WaterProperties)
    01      1        2    WATER   WaterProperties
    01      1        2    HYDRO   Hydrodynamic
    02      3        5    WATER   WaterProperties
    02      3        5    HYDRO   Hydrodynamic
-LIST
+listofsubs
 
-  if File.exists?("0list.txt") then
-    mysrcfile = File.open("list.txt") 
-    mylist.replace mysrcfile.read
-    mysrcfile.close
-  else
-    puts "Error: file list.txt doesn't exists"
-  end
+  ## 1 Create ##########
+  #You can create the class object with files ...
+  glue = IsTheActionToPerformWithFiles.new("root_ConvertToHDF5Action.dat", "listofsubs.txt")  
+  #... or with strings
+  glue = IsTheActionToPerformWith.new(mycontent, mylistofsubs)  
 
-  glue = IsTheRootStringToTransform.new(mycontent, mylist)
-
-  glue.isTransformedByTheBlock { |line|
- 
-    filecontent = String.new( glue.rootfilecontent )
-    tokens = line.split( ' ' )
-    subhash = glue.buildHashOfSubs(tokens)
+  ## 2 Generate new files ##########
+  glue.usesTransformedFilesNamedAfter("GlueAction")
   
-    subhash.each { |match, sub| filecontent.replace filecontent.gsub(match, sub) }
+  ## 3 Generate runscript ##########
+  #You can easily customize the batchfile main loop ...
+  glue.usesTheFollowingBatchfileNameAndBlock("GlueAllHdf5.bat") {
+    glue.batch.replace <<BATCH
+      copy %%i ConvertToHdf5Action.dat
+      ConvertToHdf5.exe
+BATCH
+  }  
+  #... or use a standard one
+  glue.usesAConverttohdf5BatchfileNamed("GlueAllHdf5.bat")
   
-    mytrgfile = File.new("test_ConvertToHdf5Action_" + glue.j.to_s + ".dat", "w")
-    mytrgfile.puts filecontent
-    mytrgfile.close
-    
-    puts filecontent
-  
-  }
-
-  glue.isTransformedIntoFile("Coucou_ConvertToHdf5Action")
+  ## 4 Run ##########
+  glue.ing
   
 end
