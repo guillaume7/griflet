@@ -1,6 +1,6 @@
 require "patterntransform"
 
-#Batch glue action
+#Batch glue action 
 glue = IsTheActionToPerformWithFiles.new("root_ConvertToHdf5Glue.dat", "gluelist.txt")
 glue.usesTransformedFilesNamedAfter("GlueAction")
 glue.usesAConverttohdf5BatchfileNamed("GlueAllHdf5.bat")
