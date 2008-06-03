@@ -1,4 +1,4 @@
-require "roottransform"
+require "patterntransform"
 
 #Batch glue action
 glue = IsTheActionToPerformWithFiles.new("root_ConvertToHdf5Glue.dat", "gluelist.txt")

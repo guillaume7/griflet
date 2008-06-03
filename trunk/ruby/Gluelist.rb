@@ -1,4 +1,4 @@
-require "roottransform"
+require "patterntransform"
 
 filewithcontent = "root_ConvertToHDF5Action.dat"
 filewithlist = "list.txt"
