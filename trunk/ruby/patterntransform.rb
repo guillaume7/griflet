@@ -85,7 +85,7 @@ FOOT
   end
 
   #Method 2
-  def usesAGenericMohidtoolBatchfile(batchfilename, mohidtool, configfilename)
+  def usesAGenericMohidtoolBatchfile(mohidtool, batchfilename, configfilename)
     usesTheFollowingBatchfileNameAndBlock(batchfilename){
       @batch = <<BATCH
       copy %%i #{configfilename}
@@ -94,13 +94,17 @@ BATCH
     }
   end
   
-  #Methods 3
+  def usesAGenericMohidtool(mohidtool, configfilename)
+    usesAGenericMohidtoolBatchfile(mohidtool, "All_UseTool.bat", configfilename)
+  end
+
+#Methods 3
   def usesAConverttohdf5BatchfileNamed(batchfilename)
-    usesAGenericMohidtoolBatchfile( batchfilename, "ConvertToHdf5.exe", "ConvertToHDF5Action.dat")
+    usesAGenericMohidtoolBatchfile( "ConvertToHdf5.exe", batchfilename, "ConvertToHDF5Action.dat")
   end
   
   def usesAConvert2netcdfBatchfileNamed(batchfilename)
-    usesAGenericMohidtoolBatchfile( batchfilename, "Convert2Netcdf.exe", "Convert2Netcdf.dat")
+    usesAGenericMohidtoolBatchfile( "Convert2Netcdf.exe", batchfilename, "Convert2Netcdf.dat")
   end
 
 end
