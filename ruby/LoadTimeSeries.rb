@@ -107,7 +107,9 @@ class ContainsTheseContinuousTimeSeries
       
     else
       
+      puts ""
       puts @currentParameterName
+      puts ""
       
     end
     
