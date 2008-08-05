@@ -113,6 +113,8 @@ class ContainsTheseContinuousTimeSeries
       
     end
     
+    return @currentParameterName
+    
   end
   
   def isWritingParameter(ouFile)
@@ -129,6 +131,8 @@ class ContainsTheseContinuousTimeSeries
       fid.close
       
     end
+    
+    return @currentParameterName
     
   end
   
