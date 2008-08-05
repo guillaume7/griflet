@@ -70,14 +70,82 @@ class ContainsThisTimeSerie
   
 end
 
+
+
+
+class ContainsTheseContinuousTimeSeries
+  
+  attr_reader :path, :runsList, :inFile, :currentParameterName
+  
+  def initialize(path, runslist, infile)
+    
+    @inFile = infile;
+    @runsList = runslist;
+    @path = path;
+    
+  end
+  
+  def isExtractingParameter(parameterName)
+    
+    @currentParameterName = parameterName
+    @parameter = Array.new
+    @runsList.each { |run|
+      timeserie = ContainsThisTimeSerie.new( @path + run + '\\' + @inFile)
+      @parameter = @parameter + timeserie.isExtractingParameter(@currentParameterName)
+      puts 'Run ' + run.to_s + ' is loaded.'
+    }
+    
+    return @parameter
+    
+  end
+
+  def currentlyHasWhichParameter?
+    
+    if @parameter.nil? then
+      
+      puts "No parameter loaded. The class variable currently has no parameter."
+      
+    else
+      
+      puts @currentParameterName
+      
+    end
+    
+  end
+  
+  def isWritingParameter(ouFile)
+    
+    if @parameter.nil? then
+      
+      puts "No parameter loaded. Can't write parameter."
+      
+    else
+      
+      #Write the result
+      fid=File.new(ouFile, "w")
+      fid.puts @parameter
+      fid.close
+      
+    end
+    
+  end
+  
+end
+
 if __FILE__ == $0
+
+#  coruna = ContainsThisTimeSerie.new('Coruna_North_East.srh')
   
-  coruna = ContainsThisTimeSerie.new('Coruna_North_East.srh')
-  #coruna.isPrinting
-  #time = coruna.isExtractingParameter('Seconds')
-  #puts time
+#  water = coruna.isExtractingParameter('Water_level')
+#  puts water
   
-  water = coruna.isExtractingParameter('Water_level')
-  puts water
-  
+  path = '\\\vanessa\aplica\Biscay\Biscay_Level1\Biscay_Level2\res\Run'
+  runs =  ['3'] + ('5'..'9').to_a + ['10', '11'] + ('14'..'27').to_a
+  level = 'water_level'
+
+  corunalist = ContainsTheseContinuousTimeSeries.new(path, runs, 'Coruna_North_East.srh')
+  corunalist.isExtractingParameter(level)
+  corunalist.currentlyHasWhichParameter?()
+  corunalist.isWritingParameter('coruna.txt')
+
 end
