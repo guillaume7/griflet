@@ -56,11 +56,14 @@ disp('Calculate the differences insitu level ref - refres');
 %%%%PLOTTING%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %Define here the moving averages coefficients
+filterresiduals = true;
 movdays = 3.; %days
 movincs = movdays * 24 * 6; %600 seconds increments
 
 %Filter residuals
-s_Yres1.residual = filter( ones(movincs,1)/movincs, 1, s_Yres1.residual );
+if filterresiduals
+    s_Yres1.residual = filter( ones(movincs,1)/movincs, 1, s_Yres1.residual );
+end
 
 %plot
 TidePlot(s_Yres1, s_Ystats1, s_Xres1, 'b');
@@ -68,13 +71,17 @@ TidePlot(s_Yres1, s_Ystats1, s_Xres1, 'b');
 hold on;
 
 %Filter residuals
-s_Yres2.residual = filter( ones(movincs,1)/movincs, 1, s_Yres2.residual );
+if filterresiduals
+    s_Yres2.residual = filter( ones(movincs,1)/movincs, 1, s_Yres2.residual );
+end
 
 %plot
 TidePlot(s_Yres2, s_Ystats2, s_Xres2, 'r');
 
 %Filter residuals
-s_Yresref.residual = filter( ones(movincs,1)/movincs, 1, s_Yresref.residual );
+if filterresiduals
+    s_Yresref.residual = filter( ones(movincs,1)/movincs, 1, s_Yresref.residual );
+end
 
 %plot
 h = TidePlot(s_Yresref, s_Ystatsref, s_Xres1, 'k');
@@ -84,7 +91,9 @@ hold off;
 clf;
 
 %Filter residuals
-s_Yresdiff21.residual = filter( ones(movincs,1)/movincs, 1, s_Yresdiff21.residual );
+if filterresiduals
+    s_Yresdiff21.residual = filter( ones(movincs,1)/movincs, 1, s_Yresdiff21.residual );
+end
 
 %plot
 TidePlot(s_Yresdiff21, s_Ystatsdiff21, s_Xresdiff21, 'r');
@@ -93,7 +102,9 @@ saveas(gcf, 'RMSE_21.png', 'png');
 clf;
 
 %Filter residuals
-s_Yresdiffref2.residual = filter( ones(movincs,1)/movincs, 1, s_Yresdiffref2.residual );
+if filterresiduals
+    s_Yresdiffref2.residual = filter( ones(movincs,1)/movincs, 1, s_Yresdiffref2.residual );
+end
 
 %plot
 TidePlot(s_Yresdiffref2, s_Ystatsdiffref2, s_Xresdiffref2, 'k');
@@ -102,7 +113,9 @@ saveas(gcf, 'RMSE_ref2.png', 'png');
 clf;
 
 %Filter residuals
-s_Yresdiffrefres.residual = filter( ones(movincs,1)/movincs, 1, s_Yresdiffrefres.residual );
+if filterresiduals
+    s_Yresdiffrefres.residual = filter( ones(movincs,1)/movincs, 1, s_Yresdiffrefres.residual );
+end
 
 %plot
 TidePlot(s_Yresdiffrefres, s_Ystatsdiffrefres, s_Xresdiffrefres, 'k');
