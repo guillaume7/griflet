@@ -36,9 +36,15 @@ function [s_Yres, s_Ystats, s_Xres] = NcTideAnalysis(filename, s_p)
 %    ,   'dt', dt ...
 % );
 
+if isfield(s_p, 'special_ssh')
+    ssh = s_p.special_ssh;
+else
+    ssh = 'ssh';
+end
+
 time = nc_varget(filename, 'time', s_p.delta, s_p.count);
 time = ( time - time(1) ) * s_p.factor;
-signal = nc_varget(filename, 'ssh', [s_p.delta 0 0], [s_p.count 1 1]);
+signal = nc_varget(filename, ssh, [s_p.delta 0 0], [s_p.count 1 1]);
 signal = signal - mean(signal(find(~isnan(signal))));
 [s_Yres, s_Ystats, s_Xres] = ...
          TimeSerieTideAnalysis( ...

@@ -11,6 +11,27 @@ stride = 100;
 
 orient tall;
 
+if isfield(s_Ystats,'rmsesignal')
+    statlevel = [   '; RMSE: ', num2str(s_Ystats.rmsesignal,2), ...
+                    ' m, Corr: ', num2str(s_Ystats.corrsignal(1,2),2)];
+else
+    statlevel = '';
+end
+
+if isfield(s_Ystats,'rmsetidepred')
+    stattide = [   '; RMSE: ', num2str(s_Ystats.rmsetidepred,2), ...
+                    ' m, Corr: ', num2str(s_Ystats.corrtidepred(1,2),2)];
+else
+    stattide = '';
+end
+
+if isfield(s_Ystats,'rmseresidual')
+    statresid = [   '; RMSE: ', num2str(s_Ystats.rmseresidual,2), ...
+                    ' m, Corr: ', num2str(s_Ystats.corrresidual(1,2),2)];
+else
+    statresid = '';
+end
+
 %Signal
 subplot(4,1,1);
 plot(   s_Xres.time(1:stride:end)/86400. + timeoffset,...
@@ -21,12 +42,9 @@ plot(s_Xres.time(1:stride:end)/86400. + timeoffset,...
     s_Yres.tidepred(1:stride:end), color);
 plot(xlim, [0 0], ':k');
 set(gca,'xlim', xlim, 'YLimMode', 'manual', 'YLim', lim);
-%xlabel('Days since February 1st 2004');
-title(['3 m biased water level (top), reconstituded tide (bottom)']);
+title([ '3 m biased water level (top)', statlevel, ...
+        '. Reconstituded tide (bottom)', stattide,'.']);
 ylabel('Elevation (m)');
-%text(190,5.5,'Original Time series','color','b');
-%text(190,4.75,'Tidal prediction from Analysis','color',[0 .5 0]);
-%text(190,4.0,'Original time series minus Prediction','color','r');
 
 %Residual, TidePred
 subplot(4,1,2);
@@ -35,7 +53,8 @@ plot(s_Xres.time(1:stride:end)/86400. + timeoffset,...
 hold on;
 plot(xlim, [0 0], ':k');
 set(gca,'xlim', xlim);
-title(['Unbiased residual water level']);
+title(['Unbiased residual water level with 3 day moving average', ...
+        statresid, '.']);
 ylabel('Elevation (m)');
 xlabel('Yearday');
 
