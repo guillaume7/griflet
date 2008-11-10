@@ -54,7 +54,7 @@ Seisdatarde = Time.local(Time.now.year, Time.now.month, Time.now.day, 18, 00, 00
 Tresdatarde = Time.local(Time.now.year, Time.now.month, Time.now.day, 15, 00, 00)
 
 # Twitter, password Base64 encoded
-t = Twitter::Base.new("menuIST", "oogoog")
+t = Twitter::Base.new("menuIST", "XXXXXX")
 
 #Serve para usar o Jaiku
 server = XMLRPC::Client.new2("http://api.jaiku.com/xmlrpc")
@@ -124,7 +124,7 @@ if !macro.nil? && !sopa.empty? && !carne.empty? && !peixe.empty? && !dieta.empty
     #Actualizar o Jaiku
     result = server.call("presence.send", 
       {'user' => 'menuist', 
-        'personal_key' => '8480a1766ea5fca233', 
+        'personal_key' => '8480a1766ea5fcaXXX', 
         'message' => msg} 
     )
     
