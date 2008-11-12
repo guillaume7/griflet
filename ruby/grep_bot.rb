@@ -4,7 +4,7 @@ require 'jabber/bot'
 # Create a public Jabber::Bot
 bot = Jabber::Bot.new(
   :jabber_id => 'grepbott@aol.com', 
-  :password  => 'grtobperg', 
+  :password  => 'grtobperg',
   :master    => 'guillaume.riflet@gmail.com',
   :is_public => true
 )
