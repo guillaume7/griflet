@@ -8,8 +8,9 @@ class JabberBot < Jabber::Client
     @jabber_id = jabber_id
     @jabber_password = jabber_password
     @options = options
-    jid = JID::new(@jabber_id)
-    super(jid)
+    @jid = JID::new(@jabber_id)
+    # super calls the base_method
+    super(@jid)
   end
   
   def on_message(from, body)
@@ -20,6 +21,7 @@ class JabberBot < Jabber::Client
     connect
     auth(@jabber_password)
     send(Presence::new)
+    puts "Connected! Send messages to #{@jid.strip.to_s}."
   end
   
   def run
