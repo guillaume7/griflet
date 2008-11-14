@@ -19,6 +19,8 @@ stickersfile = String.new("stickers.txt")
 #Stock quotes text
 txt = Array.new
 
+puts "Loaded variables ...\n"
+
 #Read list of stickers
 begin
   File.open(stickersfile, 'r') do |fs|
@@ -26,8 +28,10 @@ begin
     while line = fs.gets
     
       #Filter valid stickers from bad ones
-      if line.match(/^[A-Z]+$/)
+      if line.match(/^[A-Z]+/)
         stickerslist.push(line.chomp)
+      else
+        puts "Bad sticker: #{line.chomp}\n"
       end
       
     end
@@ -41,6 +45,8 @@ rescue SystemCallError
  $stderr.print "IO failed: " + $! + "\n"
  
 end
+
+puts "Read stock stickers list...\n #{stickers} \n"
 
 #Get latest stock quotes
 
@@ -64,6 +70,8 @@ rescue
 
 end
 
+puts "Read the stock quotes from yahoo finance csv api...\n"
+
 #Print them on-screen
 puts txt
 
@@ -81,3 +89,5 @@ ensure
   ft.close
   
 end
+
+puts "Saved latest stock quotes.\n"
