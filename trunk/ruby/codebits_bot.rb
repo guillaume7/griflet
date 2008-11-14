@@ -1,5 +1,21 @@
 #!/usr/bin/env ruby
 require 'jabber/bot'
+require 'socket'
+
+def sendreceive(request,ip='85.247.250.5',port=13568)
+    puts "initializing socket..."
+    TCPSocket.open(ip, port.to_i) do |sock|
+        puts "done\n"
+        puts "sending request..."
+        sock.write(request)
+        puts "done\n"
+        puts "getting answer..."
+        result = sock.read(100)
+        puts "done\n"
+        sock.close
+        return result
+    end
+end
 
 # Create a public Jabber::Bot
 bot = Jabber::Bot.new(
@@ -32,6 +48,20 @@ bot.add_command(
 end
 
 bot.add_command(
+    :syntax         => 'whereis <name or id>',
+    :description    => 'People spotter, give name or id',
+    :regex          => /^whereis/i,
+    :alias          => [
+        :syntax => 'W',
+        :regex  => /^K/i
+    ],
+    :is_public      => true
+) do |sender, message|
+    #sendreceive("whereis:#{message}")
+    "whereis:#{message}"
+end
+
+bot.add_command(
    :syntax      => 'kill',
    :description => 'Disconnect me, master.',
    :regex       => /^kill$/,
@@ -45,4 +75,7 @@ bot.add_command(
 }
 
 # Bring your new bot to life
-bot.connect
+#bot.connect
+
+puts sendreceive("Guillaume\n", 'localhost', 3000)
+puts sendreceive("Guillaume")
