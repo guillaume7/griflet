@@ -17,10 +17,34 @@ def sendreceive(request,ip='85.247.250.5',port=13568)
     end
 end
 
+class Rfidcodebits
+
+    def initialize(file = "rfidbits.txt")
+        @cache = file
+        @results = Array.new
+    end
+
+    def whereis(message)
+
+        File.open(@cache,'r') { |fs|
+            while line = fs.gets
+                if line.match(/#{message}/i)
+                    words = line.split(/\|/)
+                    @results.push(words[5] + " was last seen at " + words[1] + " at " + words[3])
+                end
+            end
+            fs.close
+            @results
+        }
+
+    end
+
+end
+
 # Create a public Jabber::Bot
 bot = Jabber::Bot.new(
-  :jabber_id => 'grepbot@jabber.cc',
-  :password => 'tobperg',
+  :jabber_id => 'codebits@jabber.cc',
+  :password => 'hackathon',
   :master    => 'guillaume.riflet@gmail.com',
   :is_public => true
 )
@@ -53,12 +77,13 @@ bot.add_command(
     :regex          => /^whereis/i,
     :alias          => [
         :syntax => 'W',
-        :regex  => /^K/i
+        :regex  => /^W/i
     ],
     :is_public      => true
 ) do |sender, message|
     #sendreceive("whereis:#{message}")
-    "whereis:#{message}"
+    bits = Rfidcodebits.new 
+    bits.whereis(message).join("\n\n")
 end
 
 bot.add_command(
@@ -79,3 +104,6 @@ bot.connect
 
 #puts sendreceive("Guillaume\n", 'localhost', 3000)
 #puts sendreceive("Guillaume")
+
+mybits = Rfidcodebits.new
+puts mybits.whereis("João").join("\n")
