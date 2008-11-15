@@ -75,7 +75,7 @@ bot.add_command(
 }
 
 # Bring your new bot to life
-#bot.connect
+bot.connect
 
-puts sendreceive("Guillaume\n", 'localhost', 3000)
-puts sendreceive("Guillaume")
+#puts sendreceive("Guillaume\n", 'localhost', 3000)
+#puts sendreceive("Guillaume")
