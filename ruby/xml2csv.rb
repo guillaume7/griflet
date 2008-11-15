@@ -18,7 +18,7 @@ begin
         }
         str = str + "\n"
     }
-    puts str
+#    puts str
     begin
         if str.match(/guillaume/i)
             out = File.open('rfidbits.txt', 'w')

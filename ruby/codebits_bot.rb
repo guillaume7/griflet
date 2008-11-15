@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 require 'jabber/bot'
 require 'socket'
+require 'date'
 
 def sendreceive(request,ip='85.247.250.5',port=13568)
     puts "initializing socket..."
@@ -15,6 +16,45 @@ def sendreceive(request,ip='85.247.250.5',port=13568)
         sock.close
         return result
     end
+end
+
+def timefromnow(string)
+    now = DateTime.now
+    date = DateTime.parse(string)
+    puts date
+    days = (now-date).to_f
+    secs = days * 86400
+    if secs < 60
+        msg = secs.to_i + " seconds ago."
+    else
+        if secs > 59 && secs < 120
+            msg = "1 minute ago."
+        else
+            mins = secs / 60
+            if mins < 60
+                msg = mins.to_i.to_s + " minutes ago."
+            else
+                if mins > 59 && mins < 120
+                    msg = "1 hour ago."
+                else
+                    hours = mins / 60
+                    if hours < 24
+                        msg = hours.to_i.to_s + " hours ago."
+                    else
+                        if hours > 23 && hours < 48
+                            msg = "1 day ago."
+                        else
+                            days = hours / 24
+                            msg = days.to_i.to_s + " days ago."
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return msg
+
 end
 
 class Rfidcodebits
@@ -33,7 +73,7 @@ class Rfidcodebits
                 if line.match(/#{pat}/i)
                     flag = true
                     words = line.split(/\|/)
-                    @results.push(words[5] + " was last seen at " + words[1] + " at " + words[3])
+                    @results.push(words[5] + " was last seen at " + words[1] + ", " + timefromnow(words[3]))
                 end
             end
             fs.close
@@ -111,5 +151,6 @@ bot.connect
 #puts sendreceive("Guillaume\n", 'localhost', 3000)
 #puts sendreceive("Guillaume")
 
-mybits = Rfidcodebits.new
-puts mybits.whereis("João").join("\n")
+#mybits = Rfidcodebits.new
+#puts mybits.whereis("João").join("\n")
+#puts timefromnow('2008-11-14 17:18:46')
