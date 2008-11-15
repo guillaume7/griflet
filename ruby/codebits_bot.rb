@@ -21,7 +21,6 @@ end
 def timefromnow(string)
     now = DateTime.now
     date = DateTime.parse(string)
-    puts date
     days = (now-date).to_f
     secs = days * 86400
     if secs < 60
@@ -70,10 +69,10 @@ class Rfidcodebits
         File.open(@cache,'r') { |fs|
             pat=message.gsub(/ /,' .*')
             while line = fs.gets
-                if line.match(/#{pat}/i)
+                words = line.split(/\|/)
+                if words[5].match(/#{pat}/i) || words[2].match(/^#{message.strip}$/)
                     flag = true
-                    words = line.split(/\|/)
-                    @results.push(words[5] + " was last seen at " + words[1] + ", " + timefromnow(words[3]))
+                    @results.push("#{words[5]} (#{words[2]}) was last seen at " + words[1] + ", " + timefromnow(words[3]))
                 end
             end
             fs.close
@@ -100,7 +99,7 @@ bot.add_command(
   :syntax      => 'rand',
   :description => 'Produce a random number from 0 to 10',
   :regex       => /^rand$/,
-  :is_public   => true
+  :is_public   => false
 ) { rand(10).to_s }
 
 # Give your bot a private command with an alias
@@ -120,10 +119,10 @@ end
 bot.add_command(
     :syntax         => 'whereis <name or id>',
     :description    => 'People spotter, give name or id',
-    :regex          => /^whereis/i,
+    :regex          => /^whereis */i,
     :alias          => [
         :syntax => 'W',
-        :regex  => /^W/i
+        :regex  => /^W */i
     ],
     :is_public      => true
 ) do |sender, message|
@@ -152,5 +151,5 @@ bot.connect
 #puts sendreceive("Guillaume")
 
 #mybits = Rfidcodebits.new
-#puts mybits.whereis("João").join("\n")
+#puts mybits.whereis(" 32 ").join("\n")
 #puts timefromnow('2008-11-14 17:18:46')
