@@ -26,14 +26,20 @@ class Rfidcodebits
 
     def whereis(message)
 
+        flag = false
         File.open(@cache,'r') { |fs|
+            pat=message.gsub(/ /,' .*')
             while line = fs.gets
-                if line.match(/#{message}/i)
+                if line.match(/#{pat}/i)
+                    flag = true
                     words = line.split(/\|/)
                     @results.push(words[5] + " was last seen at " + words[1] + " at " + words[3])
                 end
             end
             fs.close
+            if !flag 
+                @results.push("#{message} wasn't found.")
+            end
             @results
         }
 
