@@ -145,7 +145,11 @@ bot.add_command(
 }
 
 # Bring your new bot to life
-bot.connect
+begin
+  bot.connect
+rescue
+  puts "The bot got, somehow, disconnected."
+end
 
 #puts sendreceive("Guillaume\n", 'localhost', 3000)
 #puts sendreceive("Guillaume")
