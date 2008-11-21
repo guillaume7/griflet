@@ -2,35 +2,6 @@
 require 'jabber/bot'
 require 'grep_file'
 
-#Input: string
-#Output is either: 
-#       regex + filename
-#       regex
-#       string 'wrong number of arguments'
-#       string 'file doesn't exist'
-def split_message_4grep(message)
-    items = message.split(/ +/)
-    if items.length > 2 || items.length == 0
-        msg = "Error: wrong number of arguments: '#{message}'"
-        puts msg
-        msg
-    else
-        puts items[0]
-        regex = Regexp.new(items[0].gsub(/\//,''))
-        puts regex
-        if items[1].nil?
-            Array.new(regex)
-        else
-            file = items[1]
-            if File.exists? file
-                Array.new(regex, file)
-            else
-                Array.new("File '#{file}' doesn't exist")
-            end
-        end
-    end
-end
-
 # Create a public Jabber::Bot
 bot = Jabber::Bot.new(
 #  :jabber_id => 'grepbott@aol.com', 
@@ -73,29 +44,27 @@ bot.add_command(
       :regex  => /^g\s+.+/
   ]
 ) do |sender, message|
-    args = split_message_4grep(message)
-    puts "Pattern is '#{args[0]}'"
-    if args[0].responds_to? :match
-        if args[1].nil?
-            data = Grepfile.new("yahoofinance.txt")
-        else
-            data = Grepfile.new(args[1])
-        end
-        
-        reply = data.grep(args[0])
 
-    else
-        reply = args[0]
-    end
+  data = Grepfile.new
+  data.extractinput(message)
+  data.grepit.join("\n")
 
-    if reply.nil?
-        "WTF is #{message}? Say again?"
-    else
-        puts reply
-        reply.join("\n")
-    end
+end
 
-    return reply
+bot.add_command(
+  :syntax      => 'stock <sticker>',
+  :description => 'Return the latest stock quote',
+  :regex       => /^stock\s+.+/,
+  :is_public   => true,
+  :alias       => [
+      :syntax => 's <sticker>',
+      :regex  => /^s\s+.+/
+  ]
+) do |sender, message|
+
+  data = Grepfile.new
+  data.setpattern(message)
+  data.grepit
 
 end
 
@@ -103,17 +72,11 @@ bot.add_command(
     :syntax         => 'kill',
     :description    => 'Disconnects me, master',
     :regex          => /^kill$/
-) do    
+) do
     self.disconnect
     puts "The master disconnected me :("
 end
 
 # Bring your new bot to life
 bot.connect
-#arguments = split_message_4grep("GOOG")
-#puts arguments[0]
-#if arguments[1].nil? 
-#    puts grep_file( Regexp.new(arguments[0].gsub(/\//,'')))
-#else
-#    puts grep_file( Regexp.new(arguments[0].gsub(/\//,'')), arguments[1])
-#end
+
