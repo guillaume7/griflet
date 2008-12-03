@@ -21,6 +21,7 @@ class Grepfile
   def grepit(pattern=@pattern)
     reply = []
     File.open(@file) { |fs|
+      puts pattern
       flag = false
       while line = fs.gets
         if line.match(pattern)
@@ -47,6 +48,7 @@ class Grepfile
   def setfile(file)
     if File.exist? file
       @file=file
+      puts "File '#{file}' exists"
     else
       puts "Error: file '#{file}' doesn't exist"
     end
@@ -56,17 +58,13 @@ end
 
 class Grepstock < Grepfile
   
-  def stockinfo(uin)
-    self.extractinput(uin)
-    #Need to call the setpattern method
-    #Need to call the setfile method
-    #Need to call the setqtype method
-    #Need to correct the data output correspondingly to the setqtype method
+  def initialize(file="\\\\192.168.23.151\\guillaume\\Projects\\bots\\stock\\yahoofinance.txt")
+    self.setfile(file)
   end
-  
+
   #extracts a file if any
   def getfile(uin)
-    patt=/-f +(\S+)[ $]/
+    patt=/.*-f +(\s+?) +.*/
     if uin.match(patt)
       self.setfile(uin.gsub(patt, '\1'))
     end
@@ -81,12 +79,27 @@ class Grepstock < Grepfile
   end
   
   #extracts the stock pattern
-  def getpattern(uin)
+  def getsticker(uin)
+    patt=/.*[^-f] (\w+?) .*/
+    if uin.match(patt)
+      puts uin.gsub(patt, '\1')
+      self.setpattern(uin.gsub(patt, '\1'))
+    end
   end
   
+  def stockinfo(uin)
+    self.getfile(uin)
+    #self.getformat(uin)
+    self.getsticker(uin)
+    #self.grepit
+    return @data
+  end
+
 end
 
-if __FILE__ == $0 
-    finance = Grepfile.new
-    puts finance.grepit(/[A-Z]/)
+if __FILE__ == $0
+    #finance = Grepfile.new
+    #puts finance.grepit(/[A-Z]/)
+    finance = Grepstock.new
+    puts finance.stockinfo("-snfgh GOOG -f yahoofinance.txt")
 end
