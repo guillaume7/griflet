@@ -62,9 +62,8 @@ bot.add_command(
   ]
 ) do |sender, message|
 
-  data = Grepfile.new
-  data.setpattern(message)
-  data.grepit
+  data = Grepstock.new
+  data.stockinfo(message)
 
 end
 
