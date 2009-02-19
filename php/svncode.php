@@ -5,7 +5,7 @@
 <body>
 
 <?php 
-$url_root = "https://davinci.maretec.ist.utl.pt:8443/svn/mohid_v4/trunk/MohidWater/";
+$url_root = "https://user:user@davinci.maretec.ist.utl.pt:8443/svn/mohid_v4/trunk/MohidWater/";
 $http_file = "http://griflet.googlecode.com/svn/trunk/php/read_conf.php";
 $http_file = $_GET['src'];
 $tokens = preg_split("/\./", $http_file);
