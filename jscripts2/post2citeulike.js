@@ -6,7 +6,7 @@ Citeulike.Insert = {
         var table = document.getElementsByTagName('table');
 		for (var i = 0, o; o = table[i]; i++) {
             for (var j = 0, u; u = o.attributes[j]; j++) {
-                if( u.name == "title" && u.value == "Article Toolbox" ){
+                if( u.name.match(/title/i) && u.value.match(/Article Toolbox/i){
                     var anchor = document.createElement('a');
                     anchor.href = 'http://test.com';    
                     anchor.innerHTML = 'listen to me Rock!!';
