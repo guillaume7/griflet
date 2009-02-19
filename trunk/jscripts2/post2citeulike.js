@@ -1,5 +1,7 @@
 if(typeof(Citeulike) == 'undefined') Citeulike = {}
-
+<a onmouseout="document.images['addEmail'].src='/scidirimg/sci_dir/emailarticle_a.gif'" onmouseover="document.images['addEmail'].src='/scidirimg/sci_dir/emailarticle_b.gif'" style="vertical-align: bottom; color: rgb(0, 0, 0); font-family: arial,verdana,helvetica,sans-serif; text-decoration: none;" href="/science?_ob=EmailFriendURL&_method=gatherInfo&_ArticleListID=869795052&refSource=html&count=1&_uoikey=B6VCR-4T9CCSY-2&_acct=C000057394&_version=1&_userid=2459750&md5=517beb052ed9a2be270d78071a27cebc">
+  E-mail Article
+</a>
 Citeulike.Insert = {
 
    go: function() { 
@@ -8,8 +10,8 @@ Citeulike.Insert = {
             for (var j = 0, u; u = o.attributes[j]; j++) {
                 if( u.name == "title" && u.value == "Article Toolbox" ){
                     var anchor = document.createElement('a');
-                    anchor.href = 'http://test.com';    
-                    anchor.innerHTML = 'listen to me Rock!!';
+                    anchor.href = "javascript:var pw=window.open('http://www.citeulike.org/posturl?bml=popup&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'citeulike_popup_post', 'width=800,height=600,scrollbars=1,resizable=1'); void(window.setTimeout('pw.focus()',250));";
+                    anchor.innerHTML = '<img alt="citeulike favicon" name="addCiteulike" src="http://www.citeulike.org/favicon.ico"/>Post to CiteULike';
                     var entry = document.createElement('td');
                     entry.appendChild(anchor);
                     var line = document.createElement('tr');
