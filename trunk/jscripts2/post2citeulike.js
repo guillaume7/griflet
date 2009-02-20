@@ -9,7 +9,7 @@ Citeulike.Insert = {
                 if( u.name == "title" && u.value == "Article Toolbox" ){
                     var anchor = document.createElement('a');
                     anchor.href = 'http://test.com';    
-                    anchor.innerHTML = 'listen to me Rock!!';
+                    anchor.innerHTML = 'Post To CiteUlike';
                     var entry = document.createElement('td');
                     entry.appendChild(anchor);
                     var line = document.createElement('tr');
