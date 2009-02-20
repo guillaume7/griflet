@@ -11,7 +11,7 @@ Citeulike.Insert = {
                 if( u.name == "title" && u.value == "Article Toolbox" ){
                     var anchor = document.createElement('a');
                     anchor.href = 'http://test.com';
-                    anchor.innerHTML = 'Post to CiteULike';
+                    anchor.innerHTML = '<img alt="" name="postCiteulike" src="http://www.citeulike.org/favicon.ico"/>Post to CiteULike';
                     var entry = document.createElement('td');
                     entry.appendChild(anchor);
                     var line = document.createElement('tr');
