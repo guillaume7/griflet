@@ -8,7 +8,8 @@ Citeulike.Insert = {
             for (var j = 0, u; u = o.attributes[j]; j++) {
                 if( u.name == "title" && u.value == "Article Toolbox" ){
                     var anchor = document.createElement('a');
-                    anchor.href = "javascript:var pw=window.open('http://www.citeulike.org/posturl?username=guillaume&bml=popup&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'citeulike_popup_post', 'width=800,height=600,scrollbars=1,resizable=1'); void(window.setTimeout('pw.focus()',250));";    
+                    anchor.href = "javascript:var pw=window.open('http://www.citeulike.org/posturl?username=guillaume&bml=popup&url='+encodeURIComponent(location.href)+'&title='+encodeURIComponent(document.title), 'citeulike_popup_post', 'width=800,height=600,scrollbars=1,resizable=1'); void(window.setTimeout('pw.focus()',250));";
+                    anchor.style = 'vertical-align: bottom; color: rgb(0, 0, 0); font-family: arial,verdana,helvetica,sans-serif; text-decoration: none;'
                     anchor.innerHTML = '<img src="http://www.citeulike.org/favicon.ico" ></img>Post To CiteUlike';
                     var entry = document.createElement('td');
                     entry.appendChild(anchor);
