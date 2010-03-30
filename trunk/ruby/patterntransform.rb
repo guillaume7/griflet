@@ -28,12 +28,27 @@ class IsTheActionToPerformWith
     return hash
   end
   
-  def usesTransformedFilesNamedAfter(filename)
-    
+  def transformsInto(filename)
     
     @outfilename = filename
     thePatternIsTransformedByTheBlock{ |line|    
       filecontent = String.new( @patterncontent )
+
+      tokens = line.split( ' ' )
+      subhash = buildHashOfSubs(tokens)
+      
+      @matches.each { |element| 
+        iselement = false
+        subhash.each{ |match,sub| 
+            if (match.eql? element) 
+                iselement = true
+            end
+        }
+        if !iselement 
+            filecontent = String.new( filecontent.reject{|n| n.match(element)}.to_s )
+        end
+      }
+      subhash.each { |match, sub| filecontent.replace filecontent.gsub(match, sub) }
       
       tokens = line.split( ' ' )
       subhash = buildHashOfSubs(tokens)
@@ -77,7 +92,10 @@ HEAD
     pause
     @echo on
 FOOT
-
+    
+    puts @batchfilename
+    puts batchhead + @batch + batchfoot
+    
     batchfile = File.new(@batchfilename, "w")
     batchfile.puts batchhead + @batch + batchfoot
     batchfile.close
@@ -94,13 +112,17 @@ BATCH
     }
   end
   
-  #Methods 3
+  def usesAGenericMohidtool(mohidtool, configfilename)
+    usesAGenericMohidtoolBatchfile(mohidtool, "All_UseTool.bat", configfilename)
+  end
+
+#Methods 3
   def usesAConverttohdf5BatchfileNamed(batchfilename)
-    usesAGenericMohidtoolBatchfile( batchfilename, "ConvertToHdf5.exe", "ConvertToHDF5Action.dat")
+    usesAGenericMohidtoolBatchfile( "ConvertToHdf5.exe", batchfilename, "ConvertToHDF5Action.dat")
   end
   
   def usesAConvert2netcdfBatchfileNamed(batchfilename)
-    usesAGenericMohidtoolBatchfile( batchfilename, "Convert2Netcdf.exe", "Convert2Netcdf.dat")
+    usesAGenericMohidtoolBatchfile( "Convert2Netcdf.exe", batchfilename, "Convert2Netcdf.dat")
   end
 
 end
@@ -159,7 +181,7 @@ listofsubs
   glue = IsTheActionToPerformWith.new(mycontent, mylistofsubs)  
 
   ## 2 Generate new files ##########
-  glue.usesTransformedFilesNamedAfter("GlueAction")
+  glue.transformsInto("GlueAction")
   
   ## 3 Generate runscript ##########
   #You can easily customize the batchfile main loop ...
