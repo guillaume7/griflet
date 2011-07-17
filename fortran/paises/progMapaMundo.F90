@@ -6,13 +6,13 @@
 
         integer i
 
-        do i=1,1
+        do i=1,3
             call descobrirNovoMundo()
         enddo
         
         call verMapaMundo
 
-        call abandonarNovoMundo
+        call apocalipse
 
         pause
 

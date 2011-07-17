@@ -13,6 +13,8 @@
         private :: criarMapa
         private :: viajarFimDoMundo
         private :: viagemRegresso
+        private :: viajarSeguinte
+        private :: viajarAnterior
         public :: verMapaMundo
         public :: verMapa
         public :: procurarMapa
@@ -52,10 +54,10 @@
                 write(*,*) 'Insira a sua capital'
                 read(*,*) pais%capital
 
-                write(*,*) 'Insira a população em milhões de habitantes'
+                write(*,*) 'Insira a populacao em milhoes de habitantes'
                 read(*,*) pais%pop
 
-                write(*,*) 'Insira o PIB em milhões de euros'
+                write(*,*) 'Insira o PIB em milhoes de euros'
                 read(*,*) pais%pib
 
                 write(*,*) ''
@@ -100,6 +102,40 @@
                     Me => Me%mapaDeCasa
                 endif
         end subroutine viagemRegresso
+        
+        subroutine viajarSeguinte()
+            if(associated(Me)) then
+                if(associated(Me%mapaSeguinte)) then
+                    Me => Me%mapaSeguinte
+                endif
+            endif
+        end subroutine
+
+        subroutine viajarAnterior()
+
+            character(len=StringLength) :: nomePais
+
+            if(associated(Me)) then
+
+                nomePais = Me%pais%nome
+
+                call viagemRegresso()
+
+                if (nomePais .ne. Me%pais%nome) then
+                
+                    do while (  associated(Me%mapaSeguinte)                 &
+                                .and.                                       &
+                                nomePais .ne. Me%mapaSeguinte%pais%nome)
+                    
+                            call viajarSeguinte()
+                        
+                    enddo
+                    
+                endif
+
+            endif
+
+        end subroutine viajarAnterior
 
         subroutine criarMapa(mapa, mapaDeCasa)
 
@@ -113,28 +149,38 @@
 
         subroutine abandonarNovoMundo
                 
-                type(T_Mapa), pointer :: mundoAbandonado
+                type(T_Mapa), pointer :: mundoAbandonado, novoFimDoMundo
 
                 if (associated(Me)) then
 
                     call viajarFimDoMundo
 
                     mundoAbandonado => Me
+                    
+                    call viajarAnterior
+                    
+                    novoFimDoMundo => Me
+                    
+                    if (associated(novoFimDoMundo%mapaSeguinte)) then
+                    
+                        nullify(novoFimDoMundo%mapaSeguinte)
+                        
+                    endif
 
                     call viagemRegresso
-        
-                    nullify(mundoAbandonado%mapaSeguinte)
+
+                    !Testa se o mundo abandonado é casa...
                     nullify(mundoAbandonado%mapaDeCasa)
+
+                    if (not(associated(Me%mapaDeCasa))) then
+
+                        nullify(Me)
+
+                    endif
+
                     deallocate(mundoAbandonado)
-                    nullify(mundoAbandonado)
 
-                    if (associated(Me)) then
-
-                        call viajarFimDoMundo
-
-                        nullify(Me%mapaSeguinte)
-
-                    else
+                    if (not(associated(Me))) then
 
                         write(*,*) 'Mundo destruido.'
 
