@@ -79,12 +79,18 @@
 
                 !Se o mapa ainda não existe, então é criado
                 if (.not. associated(Me)) then
+
                         call criarMapa(Me,Me)
+
                 !Senão o Atlas é incrementado
                 else
+
                         call viajarFimDoMundo
+
                         call criarMapa(Me%mapaSeguinte, Me%mapaDeCasa)
+
                         Me => Me%mapaSeguinte
+
                 end if
 
                 call fundarPais(Me%pais)
@@ -92,23 +98,37 @@
         end subroutine descobrirNovoMundo
 
         subroutine viajarFimDoMundo()
+
                 do while (associated(Me%mapaSeguinte))
+
                         Me => Me%mapaSeguinte
-                end do              
+
+                end do  
+
         end subroutine viajarFimDoMundo
 
         subroutine viagemRegresso()
+
                 if(associated(Me)) then
+
                     Me => Me%mapaDeCasa
+
                 endif
+
         end subroutine viagemRegresso
         
         subroutine viajarSeguinte()
+
             if(associated(Me)) then
+
                 if(associated(Me%mapaSeguinte)) then
+
                     Me => Me%mapaSeguinte
+
                 endif
+
             endif
+
         end subroutine
 
         subroutine viajarAnterior()
@@ -148,7 +168,7 @@
         end subroutine criarMapa
 
         subroutine abandonarNovoMundo
-                
+ 
                 type(T_Mapa), pointer :: mundoAbandonado, novoFimDoMundo
 
                 if (associated(Me)) then
@@ -205,20 +225,47 @@
                 call viagemRegresso
 
                 write(*,*) trim(Me%pais%nome)
+
                 do while(associated(Me%mapaSeguinte))
+
                         Me => Me%mapaSeguinte                        
+
                         write(*,*) trim(Me%pais%nome)
+
                 end do
 
         end subroutine verMapaMundo
 
         subroutine verMapa
 
-                write(*,*) trim(Me%pais%nome)
-                if (associated(Me%mapaSeguinte)) then
-                        write(*,*) trim(Me%mapaSeguinte%pais%nome)
+                type(T_Mapa), pointer   :: presente
+
+                presente => Me
+
+                call viajarAnterior
+
+                if (Me%pais%nome .ne. presente%pais%nome) then
+
+                    write(*,*) trim(Me%pais%nome)
+
                 else
+
+                    write(*,*) 'Casa.'
+
+                endif
+
+                Me => presente
+
+                write(*,*) trim(Me%pais%nome)
+
+                if (associated(Me%mapaSeguinte)) then
+
+                        write(*,*) trim(Me%mapaSeguinte%pais%nome)
+
+                else
+                        
                         write(*,*) 'Fim do Mundo.'
+
                 endif
 
         end subroutine verMapa
@@ -226,20 +273,31 @@
         subroutine procurarMapa(nome)
 
                 character(len=StringLength)     :: nome
+
                 type(T_Mapa), pointer           :: esteMapa => Null()
 
                 Me => Me%mapaDeCasa
+
                 do while(associated(Me%mapaSeguinte))
+
                         if (trim(nome) .eq. trim(Me%pais%nome)) then
+
                                 esteMapa => Me
+
                         end if
+
                         Me => Me%mapaSeguinte
+
                 end do
 
                 if (associated(esteMapa)) then
+
                         Me => esteMapa
+
                 else
+
                         Me => Me%mapaDeCasa
+
                         write(*,*)'Não encontrou mapa de ', trim(nome), '.'
                         write(*,*)'De regresso a casa, a ', trim(Me%pais%capital),' :('
                 end if
