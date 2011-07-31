@@ -16,27 +16,27 @@ module class_colecao
 
   contains
 
-    procedure                       :: adicionar => adicionar
+    procedure                       :: adicionar => adicionar_nodo
 
-    procedure                       :: remover => remover
+    procedure                       :: remover => remover_nodo
 
     procedure                       :: removerTudo => removerTudo
  
-    procedure                       :: obter => obter
+    procedure                       :: obter => obter_nodo
 
-    procedure                       :: obterPrimeiro => obterPrimeiro
+    procedure                       :: obterPrimeiro => obterPrimeiro_nodo
 
-    procedure                       :: obterSeguinte => obterSeguinte
+    procedure                       :: obterSeguinte => obterSeguinte_nodo
  
-    procedure                       :: obterAnterior => obterAnterior
+    procedure                       :: obterAnterior => obterAnterior_nodo
 
-    procedure                       :: obterUltimo => obterUltimo
+    procedure                       :: obterUltimo => obterUltimo_nodo
 
   end type C_Colecao
 
 contains
 
-  subroutine adicionar(self)
+  subroutine adicionar_nodo(self)
 
     class(C_Colecao), target      :: self
 
@@ -54,9 +54,9 @@ contains
 
     new%id = id + 1
 
-  end subroutine adicionar
+  end subroutine adicionar_nodo
 
-  subroutine remover(self)
+  subroutine remover_nodo(self)
 
     class(C_Colecao)             :: self
 
@@ -66,7 +66,7 @@ contains
 
     deallocate(ptr)
 
-  end subroutine remover
+  end subroutine remover_nodo
 
   subroutine removerTudo(self)
 
@@ -84,7 +84,7 @@ contains
 
   end subroutine removerTudo
 
-  function obter(self,id) result(nodo)
+  function obter_nodo(self,id) result(nodo)
 
     class(C_Colecao)              :: self
 
@@ -110,9 +110,9 @@ contains
 
     end do
 
-  end function obter
+  end function obter_nodo
 
-  function obterPrimeiro(self) result(primeiro)
+  function obterPrimeiro_nodo(self) result(primeiro)
 
     class(C_Colecao)              :: self
 
@@ -120,9 +120,9 @@ contains
 
     primeiro => self%fundador
 
-  end function obterPrimeiro
+  end function obterPrimeiro_nodo
 
-  function obterAnterior(self) result(anterior)
+  function obterAnterior_nodo(self) result(anterior)
 
     class(C_Colecao)              :: self
 
@@ -161,9 +161,9 @@ contains
 
     endif
 
-  end function obterAnterior
+  end function obterAnterior_nodo
 
-  function obterSeguinte(self) result(seguinte)
+  function obterSeguinte_nodo(self) result(seguinte)
 
     class(C_Colecao), target      :: self
 
@@ -177,9 +177,9 @@ contains
 
     end if
 
-  end function obterSeguinte
+  end function obterSeguinte_nodo
 
-  function obterUltimo(self) result(ultimo)
+  function obterUltimo_nodo(self) result(ultimo)
 
     class(C_Colecao), target      :: self
 
@@ -193,7 +193,7 @@ contains
 
     end do
 
-  end function obterUltimo
+  end function obterUltimo_nodo
 
 end module class_colecao
 
