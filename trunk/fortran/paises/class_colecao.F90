@@ -1,4 +1,4 @@
-module classColecao
+module class_colecao
 
   implicit none
 
@@ -195,13 +195,13 @@ contains
 
   end function obterUltimo
 
-end module classColecao
+end module class_colecao
 
 !----------------- Program -----------------------------
 
-program colecao
+program test_colecao
 
-  use classColecao
+  use class_colecao
 
   implicit none
 
@@ -219,4 +219,4 @@ program colecao
 
   call list.removerTudo()
 
-end program colecao
+end program test_colecao
