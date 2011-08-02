@@ -1,8 +1,8 @@
 module class_colecao
 
-  !When using classes in fortran, '%' and 'target' are forbidden directives,
-  
-  !except in 'get' and 'set' methods.
+  !When using classes in fortran 2003, try considering that'%' and 'target' 
+
+  !are forbidden directives, except in 'get' and 'set' methods.
 
   implicit none
 
@@ -19,11 +19,11 @@ module class_colecao
     class(C_Colecao), pointer       :: seguinte => null()
 
   contains
-  
+
     !Constructors
-	
+
     procedure                       :: iniciar => iniciar_lista	
-	
+
 	!Sets ( '%' allowed for writing )
 
 	procedure                       :: defineId => defineId_nodo ! ( 'target' allowed )
@@ -33,7 +33,7 @@ module class_colecao
 	procedure                       :: defineSeguinte => defineSeguinte_nodo
 
     !Gets ( '%' allowed for reading)
-	
+
 	procedure                       :: obterProprio => obterProprio_nodo
 
 	procedure                       :: obterId => obterId_nodo
@@ -41,7 +41,7 @@ module class_colecao
     procedure                       :: obterPrimeiro => obterPrimeiro_nodo
 
     procedure                       :: obterSeguinte => obterSeguinte_nodo
-	
+
     !C_Colecao methods
 
     procedure                       :: adicionar => adicionar_nodo
@@ -49,7 +49,7 @@ module class_colecao
     procedure		                :: paraCada => paraCada_item
 
     procedure                       :: obter => obter_nodo	
- 
+
     procedure                       :: obterAnterior => obterAnterior_nodo
 
     procedure                       :: obterUltimo => obterUltimo_nodo
@@ -71,79 +71,79 @@ contains
   !Constructors
 
   subroutine iniciar_lista(self, id)
-  
+
     class(C_Colecao)              :: self
-	
+
 	integer, optional             :: id
-	
+
     if ( .not. associated( self.obterPrimeiro() ) ) then
-	
+
       if ( present(id) ) then
-	  
+
 	    self.defineId( id )
-	  
+
 	  end if
-	  
+
 	  self.definePrimeiro( self.obterProprio() )
-	  
+
       write(*,*) 'Criado item numero ', self.obterId()
-	
+
 	end if
-  
+
   end subroutine iniciar_lista
-  
+
   !Sets ( '%' allowed for writing )
 
   subroutine defineId_nodo(self, id)
-  
+
     class(C_Colecao)              :: self
-	
+
 	integer                       :: id
-	
+
 	self%id = id
-  
+
   end subroutine defineId_nodo
-  
+
   subroutine definePrimeiro_nodo(self, primeiro)
-  
+
     class(C_Colecao)              :: self
-	
+
 	class(C_Colecao), pointer     :: primeiro
-	
+
 	self%fundador => primeiro
-  
+
   end subroutine definePrimeiro_nodo
-  
+
   subroutine defineSeguinte_nodo(self, seguinte)
-  
+
     class(C_Colecao)              :: self
-	
+
 	class(C_Colecao), pointer     :: seguinte
-	
+
 	self%seguinte => seguinte
-  
+
   end subroutine defineSeguinte_nodo
-  
+
   !Gets ( '%' allowed for reading) 
 
   function obterProprio_nodo(self) result(proprio)
-  
+
 	class(C_Colecao), target      :: self
-	
+
 	class(C_Colecao), pointer     :: proprio
-	
+
 	proprio => self
 
   end function obterProprio_nodo
-  
+
   function obterId_nodo(self) result(id)
-  
+
 	class(C_Colecao)              :: self
-	
+
 	integer                        :: id
-	
+
 	id = self%id
-  
+
   end function obterId_nodo
 
   function obterPrimeiro_nodo(self) result(primeiro)
@@ -165,11 +165,11 @@ contains
     if ( associated( self%seguinte ) ) then
 
       seguinte => self%seguinte
-  
+
     else
-	
+
 	  seguinte => null()
-	  
+
     end if
 
   end function obterSeguinte_nodo
@@ -191,7 +191,7 @@ contains
     end if
 
     ultimo => self.obterUltimo()
-	
+
     allocate(new)
 
     new.defineId( ultimo.obterId() + 1 )
@@ -199,33 +199,38 @@ contains
     new.definePrimeiro( self.obterPrimeiro() )
 
     ultimo.defineSeguinte( new )
-	
+
     write(*,*) 'Criado item numero ', new.obterId()
 
   end subroutine adicionar_nodo
 
   function paraCada_item(self, item) result(keepup)
 
+    !Simulates 'for each <item> in <List> do ... end do'
+    !usage: do while ( Lista.paraCada (item) )
+    !usage: ...
+    !usage: end do
+
     class(C_Colecao)                             :: self
-  
+
     class(C_Colecao), pointer, intent(inout)     :: item
-	
+
 	class(C_Colecao), pointer					 :: itemZero => null()
 
     logical                                      :: keepup
 
 	if ( .not. associated(item) ) then
-	
+
 	    allocate(itemZero)
-		
+
 		itemZero.defineId(0)
-		
+
 		itemZero.definePrimeiro( self.obterPrimeiro() )
-		
+
 		itemZero.defineSeguinte( self.obterProprio() )
-		
+
 		item => itemZero
-		
+
 	end if
 
     if ( associated( item.obterSeguinte() ) ) then
@@ -241,11 +246,11 @@ contains
       keepup = .false.
 
     end if
-	
+
 	if ( associated(itemZero) ) then
-	
+
 	  deallocate(itemZero)
-	
+
 	end if
 
   end function paraCada_item
@@ -277,7 +282,7 @@ contains
     end do
 
   end function obter_nodo
-  
+
   function obterAnterior_nodo(self) result(anterior)
 
     class(C_Colecao)              :: self
@@ -297,7 +302,7 @@ contains
       do while ( id .ne. self.obterId() )
 
         if ( associated( seguinte.obterSeguinte() ) ) then
-      
+
           anterior => anterior.obterSeguinte()
 
           seguinte => seguinte.obterSeguinte()
@@ -309,6 +314,7 @@ contains
           id = self.obterId()
 
           write(*,*) 'WARN 001: Nao foi encontrado o nodo anterior na colecao'
+
           write(*,*) 'Colecao corrompida.'
 
         endif
@@ -369,7 +375,6 @@ contains
 
     write(*,*) ''
 
-
   end subroutine mostrarId_nodo
 
   subroutine mostrar_lista(self)
@@ -413,7 +418,7 @@ contains
       write(*,*) 'Removido item numero ', ultimo.obterId()
 
       deallocate(ultimo)
-      
+
     endif
 
     penultimo.defineSeguinte( null() )
@@ -455,7 +460,7 @@ program test_colecao
   integer                     :: i
 
   type(C_Colecao)             :: lista
-  
+
   call lista.iniciar(1)
 
   do i = 2, 15
