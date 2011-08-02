@@ -80,11 +80,11 @@ contains
 
       if ( present(id) ) then
 
-	    self.defineId( id )
+	    call self.defineId( id )
 
 	  end if
 
-	  self.definePrimeiro( self.obterProprio() )
+	  call self.definePrimeiro( self.obterProprio() )
 
       write(*,*) 'Criado item numero ', self.obterId()
 
@@ -194,11 +194,11 @@ contains
 
     allocate(new)
 
-    new.defineId( ultimo.obterId() + 1 )
+    call new.defineId( ultimo.obterId() + 1 )
 
-    new.definePrimeiro( self.obterPrimeiro() )
+    call new.definePrimeiro( self.obterPrimeiro() )
 
-    ultimo.defineSeguinte( new )
+    call ultimo.defineSeguinte( new )
 
     write(*,*) 'Criado item numero ', new.obterId()
 
@@ -223,11 +223,11 @@ contains
 
 	    allocate(itemZero)
 
-		itemZero.defineId(0)
+		call itemZero.defineId(0)
 
-		itemZero.definePrimeiro( self.obterPrimeiro() )
+		call itemZero.definePrimeiro( self.obterPrimeiro() )
 
-		itemZero.defineSeguinte( self.obterProprio() )
+		call itemZero.defineSeguinte( self.obterProprio() )
 
 		item => itemZero
 
@@ -421,7 +421,7 @@ contains
 
     endif
 
-    penultimo.defineSeguinte( null() )
+    call penultimo.defineSeguinte( null() )
 
   end subroutine remover_nodo
 
@@ -451,7 +451,7 @@ end module class_colecao
 
 !----------------- Program -----------------------------
 
-program test_colecao
+program unitTests_Colecao
 
   use class_colecao
 
@@ -477,4 +477,4 @@ program test_colecao
 
   call lista.mostrar()
 
-end program test_colecao
+end program unitTests_Colecao
