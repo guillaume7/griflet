@@ -273,8 +273,11 @@ contains
   function paraCada_item(self, item) result(keepup)
 
     !Simulates 'for each <item> in <List> do ... end do'
+
     !usage: do while ( Lista.paraCada (item) )
+
     !usage: ...
+
     !usage: end do
 
     class(C_Colecao)                             :: self
