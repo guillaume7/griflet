@@ -4,6 +4,10 @@ module class_colecao
 
   !are forbidden directives, except in 'get' and 'set' methods.
 
+  !Encapsulate in special methods uses of 'associated' and return logical
+
+  !result instead.
+
   implicit none
 
   private
@@ -22,21 +26,21 @@ module class_colecao
 
     !Constructors
 
-    procedure                       :: iniciar => iniciar_lista	
+    procedure                       :: iniciar => iniciar_lista
 
-	!Sets ( '%' allowed for writing )
+    !Sets ( '%' allowed for writing )
 
-	procedure                       :: defineId => defineId_nodo ! ( 'target' allowed )
+    procedure                       :: defineId => defineId_nodo ! ( 'target' allowed )
 
-	procedure                       :: definePrimeiro => definePrimeiro_nodo
+    procedure                       :: definePrimeiro => definePrimeiro_nodo
 
-	procedure                       :: defineSeguinte => defineSeguinte_nodo
+    procedure                       :: defineSeguinte => defineSeguinte_nodo
 
     !Gets ( '%' allowed for reading)
 
-	procedure                       :: obterProprio => obterProprio_nodo
+    procedure                       :: obterProprio => obterProprio_nodo
 
-	procedure                       :: obterId => obterId_nodo
+    procedure                       :: obterId => obterId_nodo
 
     procedure                       :: obterPrimeiro => obterPrimeiro_nodo
 
@@ -44,12 +48,16 @@ module class_colecao
 
     !C_Colecao methods
 
+    procedure                       :: temPrimeiro => temPrimeiro_nodo
+
+    procedure                       :: temSeguinte => temSeguinte_nodo
+
     procedure                       :: adicionar => adicionar_nodo
 
-    procedure		                :: paraCada => paraCada_item
+    procedure                       :: paraCada => paraCada_item
 
-    procedure                       :: obter => obter_nodo	
-
+    procedure                       :: obter => obter_nodo
+  
     procedure                       :: obterAnterior => obterAnterior_nodo
 
     procedure                       :: obterUltimo => obterUltimo_nodo
@@ -60,7 +68,7 @@ module class_colecao
 
     procedure                       :: remover => remover_nodo
 
-	!Destructors
+    !Destructors
 
     procedure                       :: finalizar => remover_lista
 
@@ -74,21 +82,29 @@ contains
 
     class(C_Colecao)              :: self
 
-	integer, optional             :: id
+    class(C_Colecao), pointer     :: ptr
 
-    if ( .not. associated( self.obterPrimeiro() ) ) then
+    integer, optional             :: id
+
+    if ( .not. self.temPrimeiro() ) then      
 
       if ( present(id) ) then
 
-	    call self.defineId( id )
+        call self.defineId( id )
 
-	  end if
+      end if
 
-	  call self.definePrimeiro( self.obterProprio() )
+      ptr => self.obterProprio()
+
+      call self.definePrimeiro( ptr )
+
+      ptr => null()
+
+      call self.defineSeguinte( ptr )
 
       write(*,*) 'Criado item numero ', self.obterId()
 
-	end if
+    end if
 
   end subroutine iniciar_lista
 
@@ -98,9 +114,9 @@ contains
 
     class(C_Colecao)              :: self
 
-	integer                       :: id
+    integer                       :: id
 
-	self%id = id
+    self%id = id
 
   end subroutine defineId_nodo
 
@@ -108,9 +124,9 @@ contains
 
     class(C_Colecao)              :: self
 
-	class(C_Colecao), pointer     :: primeiro
+    class(C_Colecao), pointer     :: primeiro
 
-	self%fundador => primeiro
+    self%fundador => primeiro
 
   end subroutine definePrimeiro_nodo
 
@@ -118,9 +134,9 @@ contains
 
     class(C_Colecao)              :: self
 
-	class(C_Colecao), pointer     :: seguinte
+    class(C_Colecao), pointer     :: seguinte
 
-	self%seguinte => seguinte
+    self%seguinte => seguinte
 
   end subroutine defineSeguinte_nodo
 
@@ -128,29 +144,29 @@ contains
 
   function obterProprio_nodo(self) result(proprio)
 
-	class(C_Colecao), target      :: self
+    class(C_Colecao), target      :: self
 
-	class(C_Colecao), pointer     :: proprio
+    class(C_Colecao), pointer     :: proprio
 
-	proprio => self
+    proprio => self
 
   end function obterProprio_nodo
 
   function obterId_nodo(self) result(id)
 
-	class(C_Colecao)              :: self
+    class(C_Colecao)              :: self
 
-	integer                        :: id
+    integer                        :: id
 
-	id = self%id
+    id = self%id
 
   end function obterId_nodo
 
   function obterPrimeiro_nodo(self) result(primeiro)
 
-    class(C_Colecao)              :: self
+    class(C_Colecao)                          :: self
 
-    class(C_Colecao), pointer     :: primeiro
+    class(C_Colecao), pointer                 :: primeiro
 
     primeiro => self%fundador
 
@@ -160,15 +176,15 @@ contains
 
     class(C_Colecao)              :: self
 
-    class(C_Colecao), pointer     :: seguinte
+    class(C_Colecao), pointer     :: seguinte, ptr
 
-    if ( associated( self%seguinte ) ) then
+    if ( self.temSeguinte() ) then
 
       seguinte => self%seguinte
 
     else
 
-	  seguinte => null()
+      seguinte => null()
 
     end if
 
@@ -176,27 +192,77 @@ contains
 
   !C_Colecao methods
 
-  subroutine adicionar_nodo(self)
+  function temPrimeiro_nodo(self) result(tem)
+  
+    class(C_Colecao), intent(in)  :: self
 
-    class(C_Colecao)              :: self
+    logical                       :: tem
 
-    class(C_Colecao), pointer     :: ultimo, new
+    class(C_Colecao), pointer     :: primeiro
 
-    integer                       :: id
+    primeiro => self.obterPrimeiro()
 
-    if ( .not. associated( self.obterPrimeiro() ) ) then
+    if ( associated( primeiro ) ) then
 
-	  call self.iniciar()
+      tem = .true.
+
+    else
+
+      tem = .false.
 
     end if
 
+  end function temPrimeiro_nodo
+
+  function temSeguinte_nodo(self) result(tem)
+
+    class(C_Colecao), intent(in)  :: self
+
+    logical                       :: tem
+
+    class(C_Colecao), pointer     :: seguinte
+
+    seguinte => self.obterSeguinte()
+
+    if ( associated( seguinte ) ) then
+      
+      tem = .true.
+
+    else
+
+      tem = .false.
+
+    end if
+
+  end function temSeguinte_nodo
+
+  subroutine adicionar_nodo(self)
+
+    class(C_Colecao), intent(in)  :: self
+
+    class(C_Colecao), pointer     :: ultimo, new, primeiro
+
+    if ( .not. self.temPrimeiro() ) then
+
+      call self.iniciar()
+
+    end if
+
+    write(*,*)'a'
+
+    primeiro => self.obterPrimeiro()
+
+    write(*,*) 'b'
+
     ultimo => self.obterUltimo()
 
-    allocate(new)
+    write(*,*) 'c'
 
+    allocate(new)
+    
     call new.defineId( ultimo.obterId() + 1 )
 
-    call new.definePrimeiro( self.obterPrimeiro() )
+    call new.definePrimeiro( primeiro )
 
     call ultimo.defineSeguinte( new )
 
@@ -215,43 +281,47 @@ contains
 
     class(C_Colecao), pointer, intent(inout)     :: item
 
-	class(C_Colecao), pointer					 :: itemZero => null()
+    class(C_Colecao), pointer                    :: ptr, itemZero => null()
 
     logical                                      :: keepup
 
-	if ( .not. associated(item) ) then
+    if ( .not. associated( item ) ) then
 
-	    allocate(itemZero)
+      allocate( itemZero )
 
-		call itemZero.defineId(0)
+      call itemZero.defineId(0)
 
-		call itemZero.definePrimeiro( self.obterPrimeiro() )
+      ptr => self.obterPrimeiro()
 
-		call itemZero.defineSeguinte( self.obterProprio() )
+      call itemZero.definePrimeiro( ptr )
 
-		item => itemZero
+      ptr => self.obterProprio()
 
-	end if
+      call itemZero.defineSeguinte( ptr )
 
-    if ( associated( item.obterSeguinte() ) ) then
+      item => itemZero
+
+    end if
+
+    if ( item.temSeguinte() ) then
 
       item => item.obterSeguinte()
-
+  
       keepup = .true.
 
     else
 
       item => null()
-
+      
       keepup = .false.
 
     end if
 
-	if ( associated(itemZero) ) then
+    if ( associated( itemZero ) ) then
 
-	  deallocate(itemZero)
+      deallocate( itemZero )
 
-	end if
+    end if
 
   end function paraCada_item
 
@@ -259,15 +329,15 @@ contains
 
     class(C_Colecao)              :: self
 
-    integer                       :: id
-
     class(C_Colecao), pointer     :: nodo
+
+    integer                       :: id
 
     nodo => self.obterPrimeiro()
 
     do while ( nodo.obterId() .ne. id )
 
-      if ( associated( nodo.obterSeguinte() ) ) then
+      if ( nodo.temSeguinte() ) then
 
         nodo => nodo.obterSeguinte()
 
@@ -289,34 +359,28 @@ contains
 
     class(C_Colecao), pointer     :: anterior, seguinte
 
-    integer                       :: id
-
     anterior => self.obterPrimeiro()
 
     if ( self.obterId() .ne. anterior.obterId() ) then
 
       seguinte => anterior.obterSeguinte()
 
-      id = seguinte.obterId()
+      do while ( seguinte.obterId() .ne. self.obterId() )
 
-      do while ( id .ne. self.obterId() )
-
-        if ( associated( seguinte.obterSeguinte() ) ) then
+        if ( seguinte.temSeguinte() ) then
 
           anterior => anterior.obterSeguinte()
 
           seguinte => seguinte.obterSeguinte()
 
-          id = seguinte.obterId()
-
         else
-
-          id = self.obterId()
 
           write(*,*) 'WARN 001: Nao foi encontrado o nodo anterior na colecao'
 
           write(*,*) 'Colecao corrompida.'
 
+          exit
+          
         endif
 
       end do
@@ -333,7 +397,7 @@ contains
 
     ultimo => self.obterProprio()
 
-    do while ( associated( ultimo.obterSeguinte() ) )
+    do while ( ultimo.temSeguinte() )
 
       ultimo => ultimo.obterSeguinte()
 
@@ -363,7 +427,7 @@ contains
 
     ptr => self.obterSeguinte()
 
-    if ( .not. associated(ptr) ) then
+    if ( .not. self.temSeguinte() ) then
 
       write(*,*) 'O item e o ultimo da lista.'
 
@@ -399,7 +463,7 @@ contains
 
     class(C_Colecao)             :: self
 
-    class(C_Colecao), pointer    :: ultimo, penultimo
+    class(C_Colecao), pointer    :: ultimo, penultimo, ptr
 
     ultimo => self.obterUltimo()
 
@@ -421,7 +485,9 @@ contains
 
     endif
 
-    call penultimo.defineSeguinte( null() )
+    ptr => null()
+
+    call penultimo.defineSeguinte( ptr )
 
   end subroutine remover_nodo
 
@@ -433,9 +499,9 @@ contains
 
     class(C_Colecao), pointer     :: first
 
-    first => self.obterPrimeiro();
+    first => self.obterPrimeiro()
 
-    do while ( associated ( first.obterSeguinte() ) )
+    do while ( first.temSeguinte() )
 
       call first.remover()
 
