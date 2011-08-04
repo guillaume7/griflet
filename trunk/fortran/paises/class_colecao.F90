@@ -194,15 +194,11 @@ contains
 
   function temPrimeiro_nodo(self) result(tem)
   
-    class(C_Colecao), intent(in)  :: self
+    class(C_Colecao)              :: self
 
     logical                       :: tem
 
-    class(C_Colecao), pointer     :: primeiro
-
-    primeiro => self.obterPrimeiro()
-
-    if ( associated( primeiro ) ) then
+    if ( associated( self%fundador ) ) then
 
       tem = .true.
 
@@ -216,15 +212,11 @@ contains
 
   function temSeguinte_nodo(self) result(tem)
 
-    class(C_Colecao), intent(in)  :: self
+    class(C_Colecao)              :: self
 
     logical                       :: tem
 
-    class(C_Colecao), pointer     :: seguinte
-
-    seguinte => self.obterSeguinte()
-
-    if ( associated( seguinte ) ) then
+    if ( associated( self%seguinte ) ) then
       
       tem = .true.
 
@@ -238,7 +230,7 @@ contains
 
   subroutine adicionar_nodo(self)
 
-    class(C_Colecao), intent(in)  :: self
+    class(C_Colecao)              :: self
 
     class(C_Colecao), pointer     :: ultimo, new, primeiro
 
