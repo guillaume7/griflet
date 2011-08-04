@@ -2,7 +2,7 @@ module class_colecao
 
   !When using classes in fortran 2003, try considering that'%' and 'target' 
 
-  !are forbidden directives, except in 'get' and 'set' methods.
+  !are forbidden directives, except in 'get', 'set' and 'has' methods.
 
   !Encapsulate in special methods uses of 'associated' and return logical
 
@@ -45,12 +45,14 @@ module class_colecao
     procedure                       :: obterPrimeiro => obterPrimeiro_nodo
 
     procedure                       :: obterSeguinte => obterSeguinte_nodo
-
-    !C_Colecao methods
+    
+    !Has ( '%' allowed for checking association )
 
     procedure                       :: temPrimeiro => temPrimeiro_nodo
 
     procedure                       :: temSeguinte => temSeguinte_nodo
+
+    !C_Colecao methods
 
     procedure                       :: adicionar => adicionar_nodo
 
