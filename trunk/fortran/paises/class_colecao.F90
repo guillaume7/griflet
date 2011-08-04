@@ -196,7 +196,7 @@ contains
 
   end subroutine obterSeguinte_nodo
 
-  !C_Colecao methods
+  !Has methods
 
   function temPrimeiro_nodo(self) result(tem)
   
