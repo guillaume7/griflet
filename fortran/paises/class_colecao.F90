@@ -90,17 +90,17 @@ contains
 
     if ( .not. self.temPrimeiro() ) then      
 
-      if ( present(id) ) then
+      if ( present( id ) ) then
 
         call self.defineId( id )
 
       end if
 
-      ptr => self.obterProprio()
+      call self.obterProprio( ptr )
 
       call self.definePrimeiro( ptr )
 
-      ptr => null()
+      nullify( ptr )
 
       call self.defineSeguinte( ptr )
 
@@ -142,17 +142,21 @@ contains
 
   end subroutine defineSeguinte_nodo
 
-  !Gets ( '%' allowed for reading) 
+  !Gets ( '%' allowed for reading)
+  !It is safer to avoid getting pointers on function returns
+  !as they are not (yet as of ifort 12.0) usable directly
+  !as arguments. To get pointers it's  best to use
+  !subroutine calls.
 
-  function obterProprio_nodo(self) result(proprio)
+  subroutine obterProprio_nodo(self, proprio)
 
-    class(C_Colecao), target      :: self
+    class(C_Colecao), target                    :: self
 
-    class(C_Colecao), pointer     :: proprio
+    class(C_Colecao), pointer, intent(out)      :: proprio
 
     proprio => self
 
-  end function obterProprio_nodo
+  end subroutine obterProprio_nodo
 
   function obterId_nodo(self) result(id)
 
@@ -164,21 +168,21 @@ contains
 
   end function obterId_nodo
 
-  function obterPrimeiro_nodo(self) result(primeiro)
+  subroutine obterPrimeiro_nodo(self, primeiro)
 
     class(C_Colecao)                          :: self
 
-    class(C_Colecao), pointer                 :: primeiro
+    class(C_Colecao), pointer, intent(out)    :: primeiro
 
     primeiro => self%fundador
 
-  end function obterPrimeiro_nodo
+  end subroutine obterPrimeiro_nodo
 
-  function obterSeguinte_nodo(self) result(seguinte)
+  subroutine obterSeguinte_nodo(self, seguinte)
 
-    class(C_Colecao)              :: self
+    class(C_Colecao)                        :: self
 
-    class(C_Colecao), pointer     :: seguinte, ptr
+    class(C_Colecao), pointer, intent(out)  :: seguinte
 
     if ( self.temSeguinte() ) then
 
@@ -186,11 +190,11 @@ contains
 
     else
 
-      seguinte => null()
+      nullify( seguinte )
 
     end if
 
-  end function obterSeguinte_nodo
+  end subroutine obterSeguinte_nodo
 
   !C_Colecao methods
 
@@ -230,6 +234,8 @@ contains
 
   end function temSeguinte_nodo
 
+  !C_Colecao methods
+  
   subroutine adicionar_nodo(self)
 
     class(C_Colecao)              :: self
@@ -242,15 +248,9 @@ contains
 
     end if
 
-    write(*,*)'a'
+    call self.obterPrimeiro(primeiro)
 
-    primeiro => self.obterPrimeiro()
-
-    write(*,*) 'b'
-
-    ultimo => self.obterUltimo()
-
-    write(*,*) 'c'
+    call self.obterUltimo(ultimo)
 
     allocate(new)
     
@@ -288,11 +288,11 @@ contains
 
       call itemZero.defineId(0)
 
-      ptr => self.obterPrimeiro()
+      call self.obterPrimeiro(ptr)
 
       call itemZero.definePrimeiro( ptr )
 
-      ptr => self.obterProprio()
+      call self.obterProprio(ptr)
 
       call itemZero.defineSeguinte( ptr )
 
@@ -302,13 +302,13 @@ contains
 
     if ( item.temSeguinte() ) then
 
-      item => item.obterSeguinte()
+      call item.obterSeguinte(item)
   
       keepup = .true.
 
     else
 
-      item => null()
+      nullify( item )
       
       keepup = .false.
 
@@ -322,21 +322,21 @@ contains
 
   end function paraCada_item
 
-  function obter_nodo(self,id) result(nodo)
+  subroutine obter_nodo(self, id, nodo)
 
-    class(C_Colecao)              :: self
+    class(C_Colecao)                            :: self
 
-    class(C_Colecao), pointer     :: nodo
+    integer                                     :: id
+    
+    class(C_Colecao), pointer, intent(out)      :: nodo
 
-    integer                       :: id
-
-    nodo => self.obterPrimeiro()
+    call self.obterPrimeiro(nodo)
 
     do while ( nodo.obterId() .ne. id )
 
       if ( nodo.temSeguinte() ) then
 
-        nodo => nodo.obterSeguinte()
+        call nodo.obterSeguinte(nodo)
 
       else
 
@@ -348,27 +348,29 @@ contains
 
     end do
 
-  end function obter_nodo
+  end subroutine obter_nodo
 
-  function obterAnterior_nodo(self) result(anterior)
+  subroutine obterAnterior_nodo(self, anterior)
 
-    class(C_Colecao)              :: self
+    class(C_Colecao)                            :: self
 
-    class(C_Colecao), pointer     :: anterior, seguinte
+    class(C_Colecao), pointer, intent(out)      :: anterior
+    
+    class(C_Colecao), pointer                   :: seguinte
 
-    anterior => self.obterPrimeiro()
+    call self.obterPrimeiro(anterior)
 
     if ( self.obterId() .ne. anterior.obterId() ) then
 
-      seguinte => anterior.obterSeguinte()
+      call anterior.obterSeguinte(seguinte)
 
       do while ( seguinte.obterId() .ne. self.obterId() )
 
         if ( seguinte.temSeguinte() ) then
 
-          anterior => anterior.obterSeguinte()
+          call anterior.obterSeguinte(anterior)
 
-          seguinte => seguinte.obterSeguinte()
+          call seguinte.obterSeguinte(seguinte)
 
         else
 
@@ -384,23 +386,23 @@ contains
 
     endif
 
-  end function obterAnterior_nodo
+  end subroutine obterAnterior_nodo
 
-  function obterUltimo_nodo(self) result(ultimo)
+  subroutine obterUltimo_nodo(self, ultimo)
 
-    class(C_Colecao)              :: self
+    class(C_Colecao)                            :: self
 
-    class(C_Colecao), pointer     :: ultimo
+    class(C_Colecao), pointer, intent(out)      :: ultimo
 
-    ultimo => self.obterProprio()
+    call self.obterProprio(ultimo)
 
     do while ( ultimo.temSeguinte() )
 
-      ultimo => ultimo.obterSeguinte()
+      call ultimo.obterSeguinte(ultimo)
 
     end do
 
-  end function obterUltimo_nodo
+  end subroutine obterUltimo_nodo
 
   subroutine mostrarId_nodo(self)
 
@@ -408,7 +410,7 @@ contains
 
     class(C_Colecao), pointer :: ptr
 
-    ptr => self.obterAnterior()
+    call self.obterAnterior(ptr)
 
     if ( self.obterId() .eq. ptr.obterId() ) then
 
@@ -422,7 +424,7 @@ contains
 
     write(*,*) 'O numero do item e o ', self.obterId()
 
-    ptr => self.obterSeguinte()
+    call self.obterSeguinte(ptr)
 
     if ( .not. self.temSeguinte() ) then
 
@@ -462,9 +464,9 @@ contains
 
     class(C_Colecao), pointer    :: ultimo, penultimo, ptr
 
-    ultimo => self.obterUltimo()
+    call self.obterUltimo(ultimo)
 
-    penultimo => ultimo.obterAnterior()
+    call ultimo.obterAnterior(penultimo)
 
     if ( ultimo.obterId() .eq. penultimo.obterId() ) then
 
@@ -482,7 +484,7 @@ contains
 
     endif
 
-    ptr => null()
+    nullify( ptr )
 
     call penultimo.defineSeguinte( ptr )
 
@@ -496,7 +498,7 @@ contains
 
     class(C_Colecao), pointer     :: first
 
-    first => self.obterPrimeiro()
+    call self.obterPrimeiro(first)
 
     do while ( first.temSeguinte() )
 
@@ -539,5 +541,7 @@ program unitTests_Colecao
   call lista.finalizar()
 
   call lista.mostrar()
+  
+  pause
 
 end program unitTests_Colecao
