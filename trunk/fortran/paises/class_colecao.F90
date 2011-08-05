@@ -244,7 +244,7 @@ contains
 
     if ( .not. self.temPrimeiro() ) then
 
-      call self.iniciar()
+      call self.iniciar(1)
 
     end if
 
@@ -526,9 +526,7 @@ program unitTests_Colecao
 
   type(C_Colecao)             :: lista
 
-  call lista.iniciar(1)
-
-  do i = 2, 15
+  do i = 1, 15
 
     call lista.adicionar()
 
