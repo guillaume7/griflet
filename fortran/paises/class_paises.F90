@@ -1,4 +1,4 @@
-module class_pais
+module class_paises
 
   use class_colecao
 
@@ -28,9 +28,11 @@ module class_pais
 
     !C_Paises methods
 
-    procedure :: adicionar  => adicionar_pais
+    procedure  adicionar  => adicionar_pais
 
-    procedure :: explorar   => explorar_pais
+    procedure  explorar   => explorar_pais
+    
+    procedure  mostrar    => mostrar_paises
 
     !Destructor
 
@@ -84,33 +86,51 @@ contains
   
     call adicionar_lista(self)
     
-    novoPais => self.obterUltimo()
+    call self.obterUltimo(novoPais)
     
     call novoPais.fundar()
   
   end subroutine adicionar_pais
   
-  subroutine explorar_pais(pais)
+  subroutine explorar_pais(self)
 
-    class(C_Paises)            :: pais
+    class(C_Paises)            :: self
 
-    write(*,*) 'O pais ', trim(pais%nome),','
+    write(*,*) 'O pais ', trim(self%nome),','
     
-    write(*,*) 'cuja capital eh ', trim(pais%capital),','
+    write(*,*) 'cuja capital eh ', trim(self%capital),','
     
-    write(*,*) 'tem uma populacao de', pais%pop,'habitantes'
+    write(*,*) 'tem uma populacao de', self%pop,'habitantes'
     
-    write(*,*) 'e um pib de ', pais%pib, 'milhoes de euros.'
+    write(*,*) 'e um pib de ', self%pib, 'milhoes de euros.'
 
   end subroutine explorar_pais
+  
+  subroutine mostrar_paises(self)
+  
+    class(C_Paises)             :: self
+    
+    class(C_Paises), pointer    :: pais => null()
+    
+    do while( self.paraCada(pais) )
+    
+      call pais.explorar()
+    
+    end do
+  
+    write(*,*) 'Paises mostrados.'
 
-end module class_pais
+    write(*,*) ''
+
+  end subroutine mostrar_paises
+
+end module class_paises
 
 !----------------- Programa ----------------------
 
-program progMapaMundoTres
+program unitTests_paises
 
-  use moduleMapaMundoTres
+  use class_paises
 
   implicit none
 
@@ -132,10 +152,24 @@ program progMapaMundoTres
 
   enddo
         
+  call mapaTerrestre.mostrar()
+  
+  call mapaTerrestre.finalizar()
+  
+  call mapaTerrestre.mostrar()
+
+  pause
+  
   !Descobrir e explorar a Lua
 
   call mapaLunar.fundar()
+  
+  call mapaLunar.explorar()
+  
+  call mapaLunar.finalizar()
+
+  call mapaTerrestre.mostrar()
 
   pause
 
-end program progMapaMundoTres
+end program unitTests_paises
