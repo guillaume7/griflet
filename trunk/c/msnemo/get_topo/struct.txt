@@ -1,0 +1,161 @@
+////////////////////////////////////////////////////////////////
+----------------------------------------------------------------
+file name: earth_topo.nc
+file id: 3 
+number of dims: 2 
+number of variables: 3 
+id of unlimited dimension: -1 
+number of global attributes: 1 
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: ETOPO05_X
+dimension id: 0
+variable id: 0
+dimension length: 4320
+number of attributes: 4
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: ETOPO05_Y1_2160
+dimension id: 1
+variable id: 1
+dimension length: 2160
+number of attributes: 3
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+variable name: ROSE
+variable id: 2
+number of dimensions: 2
+dimensions id shape: [1 0]
+variable type: 5
+number of attributes: 5
+----------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////
+----------------------------------------------------------------
+file name: 96_u.cdf
+file id: 4 
+number of dims: 6 
+number of variables: 7 
+id of unlimited dimension: 5 
+number of global attributes: 1 
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: TIME1
+dimension id: 5
+variable id: 5
+dimension length: 12
+number of attributes: 3
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: XU_I180_540
+dimension id: 0
+variable id: 0
+dimension length: 361
+number of attributes: 4
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: YU_J1_199
+dimension id: 1
+variable id: 1
+dimension length: 199
+number of attributes: 4
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: YU_J1_199edges
+dimension id: 2
+variable id: 2
+dimension length: 200
+number of attributes: 1
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: ZT_K1_30
+dimension id: 3
+variable id: 3
+dimension length: 30
+number of attributes: 5
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: ZT_K1_30edges
+dimension id: 4
+variable id: 4
+dimension length: 31
+number of attributes: 1
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+variable name: U
+variable id: 6
+number of dimensions: 4
+dimensions id shape: [5 3 1 0]
+variable type: 5
+number of attributes: 5
+----------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////
+----------------------------------------------------------------
+file name: topo.cdf
+file id: 5 
+number of dims: 5 
+number of variables: 6 
+id of unlimited dimension: -1 
+number of global attributes: 0 
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: XU_I180_540
+dimension id: 0
+variable id: 0
+dimension length: 361
+number of attributes: 2
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: YU_J1_199
+dimension id: 1
+variable id: 1
+dimension length: 199
+number of attributes: 2
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: YU_J1_199edges
+dimension id: 2
+variable id: 2
+dimension length: 200
+number of attributes: 0
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: ZT_K1_30
+dimension id: 3
+variable id: 3
+dimension length: 30
+number of attributes: 2
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+dimension name: ZT_K1_30edges
+dimension id: 4
+variable id: 4
+dimension length: 31
+number of attributes: 0
+----------------------------------------------------------------
+
+----------------------------------------------------------------
+variable name: LANDMASK
+variable id: 5
+number of dimensions: 3
+dimensions id shape: [3 1 0]
+variable type: 3
+number of attributes: 2
+----------------------------------------------------------------
+

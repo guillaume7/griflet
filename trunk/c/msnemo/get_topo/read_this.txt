@@ -1,0 +1,8 @@
+To make get_topo work make sure you have in the same path the following files:
+
+- earth_topo.nc
+- 9x_u.cdf
+
+Once it executes it will create a file that contains the same dimensions of 9x_u.cdf and the downscaled topography of earth_topo.nc under the netcdf variable "LANDMASK" named:
+
+- topo.cdf

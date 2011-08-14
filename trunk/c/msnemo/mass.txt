@@ -1,0 +1,49 @@
+-prog v0.17a.
+-pertes de masse de traceur.
+-Simulations sur 10 ans soit 8001 iterations de temps.
+
+*Que de l'advection:
+
+	Pour des cellules de la grille a volume FIXE, en 2D:
+	3 parties par 10^11.
+
+	Pour des cellules de la grille a volume VARIABLE, en 2D:
+	2 parties par 10^11.
+
+	Pour des cellules de la grille a volume FIXE, IMPLICITE:
+	OVERSHOOTING
+
+	Pour des cellules de la grille a volume VARIABLE, IMPLICITE:
+	OVERSHOOTING
+
+*Avec de la diffusion:
+	Pour des cellules de la grille a volume FIXE, en 2D:
+	4 parties par 10^10.
+
+	Pour des cellules de la grille a volume VARIABLE, en 2D:
+	-2 parties par 10^1!!!
+
+	Pour des cellules de la grille a volume FIXE, IMPLICITE:
+	OVERSHOOTING
+
+	Pour des cellules de la grille a volume VARIABLE, IMPLICITE:
+	OVERSHOOTING
+
+*Que de la diffusion:
+	Pour des cellules de la grille a volume FIXE, en 2D:
+	1 partie par 10^13.
+
+	Pour des cellules de la grille a volume VARIABLE, en 2D:
+	8 partie par 10^3!!!
+
+	Pour des cellules de la grille a volume FIXE, IMPLICITE:
+	-8 parties pour 10^11.
+
+	Pour des cellules de la grille a volume VARIABLE, IMPLICITE:
+	-2 parties pour 10^1!!!
+
+Conclusions:
+-La diffusion semble foirer partout. 1 bugs. 1 en mode VARIABLE. Il faut faire les fonctions de leaking!
+-Le mode implicite semble simplement foirer avec de l'overshooting!! Que faire?
+Est-ce un bug? Il devrait etre un algo unconditionnellement stable. (Mais la litterature ne semble vouloir l'appliquer
+qu'aux schemas de diffusion).
