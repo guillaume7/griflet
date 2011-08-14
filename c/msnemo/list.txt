@@ -1,0 +1,38 @@
+ O volume na unidade C nÆo tem nome
+ O n£mero de s‚rie do volume ‚ 0C6D-456A
+
+ Direct¢rio de C:\Documents and Settings\Asus M2400N\Os meus documentos\ucl\memoire\simulation\msnemo
+
+11-06-2004  14:53             4.891 msnemo.cpp
+11-06-2004  17:31             6.759 prog_3d.cpp
+11-06-2004  20:46            14.947 prog_all.cpp
+11-06-2004  19:50            22.050 prog_blc.cpp
+31-05-2004  18:38             6.446 prog_cdf.cpp
+11-06-2004  16:49            11.212 prog_cdf_out.cpp
+22-04-2004  19:14            10.687 prog_cdl.cpp
+19-05-2004  11:51               881 prog_io.cpp
+02-04-2004  22:48             3.486 prog_mai.cpp
+10-06-2004  16:30            11.988 prog_prm.cpp
+08-04-2004  19:32               293 StdAfx.cpp
+              11 ficheiro(s)           93.640 bytes
+               0 Dir(s)        25.662.586.880 bytes livres
+ O volume na unidade C nÆo tem nome
+ O n£mero de s‚rie do volume ‚ 0C6D-456A
+
+ Direct¢rio de C:\Documents and Settings\Asus M2400N\Os meus documentos\ucl\memoire\simulation\msnemo
+
+29-05-2004  02:29             2.469 prog_3d.h
+11-06-2004  20:44             2.606 prog_all.h
+03-06-2004  21:07             2.004 prog_blc.h
+23-03-2004  20:08               350 prog_boo.h
+20-05-2004  16:59             2.587 prog_cdf.h
+20-05-2004  13:02               658 prog_cdf_out.h
+25-04-2004  23:48               603 prog_cdl.h
+28-05-2004  20:58               297 prog_ind.h
+02-04-2004  19:11               204 prog_io.h
+10-06-2004  18:24               720 prog_mai.h
+11-06-2004  19:00             5.052 prog_prm.h
+22-04-2004  13:32               185 prog_set.h
+19-05-2004  12:08             1.023 StdAfx.h
+              13 ficheiro(s)           18.758 bytes
+               0 Dir(s)        25.662.586.880 bytes livres

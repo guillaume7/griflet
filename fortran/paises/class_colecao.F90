@@ -1,4 +1,11 @@
-module class_colecao
+#ifndef COLECAO
+
+#define COLECAO colecao
+#define CLASS_COLECAO class_colecao
+
+#endif 
+
+module class_COLECAO
 
   !When using classes in fortran 2003, try considering that'%' and 'target' 
 
@@ -12,15 +19,25 @@ module class_colecao
 
   private
 
-  public C_Colecao
+  public C_lista_COLECAO
 
-  type C_Colecao
+  type                    :: colecao
+
+    !Empty fake type
+
+  end type colecao
+
+  type, extends(COLECAO)  :: C_lista_COLECAO
 
     integer                         :: id = 1
 
-    class(C_Colecao), pointer       :: fundador => null()
+    integer                         :: _OLA
 
-    class(C_Colecao), pointer       :: seguinte => null()
+    integer                         :: COLECAO
+
+    class(C_lista_COLECAO), pointer       :: fundador => null()
+
+    class(C_lista_COLECAO), pointer       :: seguinte => null()
 
   contains
 
@@ -52,7 +69,7 @@ module class_colecao
 
     procedure                       :: temSeguinte => temSeguinte_nodo
 
-    !C_Colecao methods
+    !C_lista_COLECAO methods
 
     procedure                       :: adicionar => adicionar_nodo
 
@@ -74,7 +91,7 @@ module class_colecao
 
     procedure                       :: finalizar => remover_lista
 
-  end type C_Colecao
+  end type C_lista_COLECAO
 
 contains
 
@@ -82,9 +99,9 @@ contains
 
   subroutine iniciar_lista(self, id)
 
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
-    class(C_Colecao), pointer     :: ptr
+    class(C_lista_COLECAO), pointer     :: ptr
 
     integer, optional             :: id
 
@@ -114,7 +131,7 @@ contains
 
   subroutine defineId_nodo(self, id)
 
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
     integer                       :: id
 
@@ -124,9 +141,9 @@ contains
 
   subroutine definePrimeiro_nodo(self, primeiro)
 
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
-    class(C_Colecao), pointer     :: primeiro
+    class(C_lista_COLECAO), pointer     :: primeiro
 
     self%fundador => primeiro
 
@@ -134,9 +151,9 @@ contains
 
   subroutine defineSeguinte_nodo(self, seguinte)
 
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
-    class(C_Colecao), pointer     :: seguinte
+    class(C_lista_COLECAO), pointer     :: seguinte
 
     self%seguinte => seguinte
 
@@ -150,9 +167,9 @@ contains
 
   subroutine obterProprio_nodo(self, proprio)
 
-    class(C_Colecao), target                    :: self
+    class(C_lista_COLECAO), target                    :: self
 
-    class(C_Colecao), pointer, intent(out)      :: proprio
+    class(C_lista_COLECAO), pointer, intent(out)      :: proprio
 
     proprio => self
 
@@ -160,7 +177,7 @@ contains
 
   function obterId_nodo(self) result(id)
 
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
     integer                        :: id
 
@@ -170,9 +187,9 @@ contains
 
   subroutine obterPrimeiro_nodo(self, primeiro)
 
-    class(C_Colecao)                          :: self
+    class(C_lista_COLECAO)                          :: self
 
-    class(C_Colecao), pointer, intent(out)    :: primeiro
+    class(C_lista_COLECAO), pointer, intent(out)    :: primeiro
 
     primeiro => self%fundador
 
@@ -180,9 +197,9 @@ contains
 
   subroutine obterSeguinte_nodo(self, seguinte)
 
-    class(C_Colecao)                        :: self
+    class(C_lista_COLECAO)                        :: self
 
-    class(C_Colecao), pointer, intent(out)  :: seguinte
+    class(C_lista_COLECAO), pointer, intent(out)  :: seguinte
 
     if ( self.temSeguinte() ) then
 
@@ -200,7 +217,7 @@ contains
 
   function temPrimeiro_nodo(self) result(tem)
   
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
     logical                       :: tem
 
@@ -218,7 +235,7 @@ contains
 
   function temSeguinte_nodo(self) result(tem)
 
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
     logical                       :: tem
 
@@ -234,13 +251,13 @@ contains
 
   end function temSeguinte_nodo
 
-  !C_Colecao methods
+  !C_lista_COLECAO methods
   
   subroutine adicionar_nodo(self)
 
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
-    class(C_Colecao), pointer     :: ultimo, new, primeiro
+    class(C_lista_COLECAO), pointer     :: ultimo, new, primeiro
 
     if ( .not. self.temPrimeiro() ) then
 
@@ -274,11 +291,11 @@ contains
 
     !usage: end do
 
-    class(C_Colecao)                             :: self
+    class(C_lista_COLECAO)                             :: self
 
-    class(C_Colecao), pointer, intent(inout)     :: item
+    class(C_lista_COLECAO), pointer, intent(inout)     :: item
 
-    class(C_Colecao), pointer                    :: ptr, itemZero => null()
+    class(C_lista_COLECAO), pointer                    :: ptr, itemZero => null()
 
     logical                                      :: keepup
 
@@ -324,11 +341,11 @@ contains
 
   subroutine obter_nodo(self, id, nodo)
 
-    class(C_Colecao)                            :: self
+    class(C_lista_COLECAO)                            :: self
 
     integer                                     :: id
     
-    class(C_Colecao), pointer, intent(out)      :: nodo
+    class(C_lista_COLECAO), pointer, intent(out)      :: nodo
 
     call self.obterPrimeiro(nodo)
 
@@ -352,11 +369,11 @@ contains
 
   subroutine obterAnterior_nodo(self, anterior)
 
-    class(C_Colecao)                            :: self
+    class(C_lista_COLECAO)                            :: self
 
-    class(C_Colecao), pointer, intent(out)      :: anterior
+    class(C_lista_COLECAO), pointer, intent(out)      :: anterior
     
-    class(C_Colecao), pointer                   :: seguinte
+    class(C_lista_COLECAO), pointer                   :: seguinte
 
     call self.obterPrimeiro(anterior)
 
@@ -376,7 +393,7 @@ contains
 
           write(*,*) 'WARN 001: Nao foi encontrado o nodo anterior na colecao'
 
-          write(*,*) 'Colecao corrompida.'
+          write(*,*) 'lista_COLECAO corrompida.'
 
           exit
           
@@ -390,9 +407,9 @@ contains
 
   subroutine obterUltimo_nodo(self, ultimo)
 
-    class(C_Colecao)                            :: self
+    class(C_lista_COLECAO)                            :: self
 
-    class(C_Colecao), pointer, intent(out)      :: ultimo
+    class(C_lista_COLECAO), pointer, intent(out)      :: ultimo
 
     call self.obterProprio(ultimo)
 
@@ -406,9 +423,9 @@ contains
 
   subroutine mostrarId_nodo(self)
 
-    class(C_Colecao)          :: self
+    class(C_lista_COLECAO)          :: self
 
-    class(C_Colecao), pointer :: ptr
+    class(C_lista_COLECAO), pointer :: ptr
 
     call self.obterAnterior(ptr)
 
@@ -442,9 +459,9 @@ contains
 
   subroutine mostrar_lista(self)
 
-    class(C_Colecao)          :: self
+    class(C_lista_COLECAO)          :: self
 
-    class(C_Colecao), pointer :: item => null()
+    class(C_lista_COLECAO), pointer :: item => null()
 
     do while ( self.paraCada(item) )
 
@@ -460,9 +477,9 @@ contains
 
   subroutine remover_nodo(self)
 
-    class(C_Colecao)             :: self
+    class(C_lista_COLECAO)             :: self
 
-    class(C_Colecao), pointer    :: ultimo, penultimo, ptr
+    class(C_lista_COLECAO), pointer    :: ultimo, penultimo, ptr
 
     call self.obterUltimo(ultimo)
 
@@ -494,9 +511,9 @@ contains
 
   subroutine remover_lista(self)
 
-    class(C_Colecao)              :: self
+    class(C_lista_COLECAO)              :: self
 
-    class(C_Colecao), pointer     :: first
+    class(C_lista_COLECAO), pointer     :: first
 
     call self.obterPrimeiro(first)
 
@@ -516,7 +533,7 @@ end module class_colecao
 
 !----------------- Program -----------------------------
 
-program unitTests_Colecao
+program unitTests_lista_COLECAO
 
   use class_colecao
 
@@ -524,7 +541,7 @@ program unitTests_Colecao
 
   integer                     :: i
 
-  type(C_Colecao)             :: lista
+  type(C_lista_COLECAO)             :: lista
 
   do i = 1, 15
 
@@ -542,4 +559,4 @@ program unitTests_Colecao
   
   pause
 
-end program unitTests_Colecao
+end program unitTests_lista_COLECAO

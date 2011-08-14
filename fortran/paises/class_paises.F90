@@ -56,11 +56,11 @@ contains
   
   subroutine fundar_pais(self)
 
-    class(C_Paises) :: self
+    class(C_Paises)  :: self
+
+    if ( .not. self%C_Colecao%temPrimeiro() ) then
     
-    if ( .not. self.temPrimeiro() ) then
-    
-      call self.iniciar(1)
+      call self%C_Colecao%iniciar(1)
     
     end if
                 
@@ -190,11 +190,15 @@ contains
     
     class(C_Paises), pointer    :: novoPais
   
-    call adicionar_lista(self)
+    call self%C_Colecao%adicionar()
     
+<<<<<<< .mine
+    call self%obterUltimo(novoPais%C_Colecao)
+=======
     !call self.obterUltimo(novoPais)
+>>>>>>> .r106
     
-    call novoPais.fundar()
+    call novoPais%fundar()
   
   end subroutine adicionar_pais
   
@@ -218,11 +222,11 @@ contains
     
     class(C_Paises), pointer    :: pais => null()
     
-    !do while( self.paraCada(pais) )
-    
-    !  call pais.explorar()
-    
-    !end do
+    do while( self%paraCada(pais%C_Colecao) )
+
+      call pais.explorar()
+
+    end do
   
     write(*,*) 'Paises mostrados.'
 

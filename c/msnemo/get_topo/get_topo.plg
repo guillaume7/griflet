@@ -1,0 +1,54 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: get_topo - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "c:\WINDOWS\TEMP\RSP42E.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "DLL_EXPORT" /FR"Debug/" /Fp"Debug/get_topo.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Documents and Settings\Asus M2400N\Os meus documentos\ucl\memoire\simulation\msnemo\get_topo\display_cdf.cpp"
+"C:\Documents and Settings\Asus M2400N\Os meus documentos\ucl\memoire\simulation\msnemo\get_topo\get_topo.cpp"
+"C:\Documents and Settings\Asus M2400N\Os meus documentos\ucl\memoire\simulation\msnemo\get_topo\prog_cdf.cpp"
+"C:\Documents and Settings\Asus M2400N\Os meus documentos\ucl\memoire\simulation\msnemo\write_topo.cpp"
+]
+Creating command line "cl.exe @c:\WINDOWS\TEMP\RSP42E.tmp" 
+Creating temporary file "c:\WINDOWS\TEMP\RSP42F.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "DLL_EXPORT" /FR"Debug/" /Fp"Debug/get_topo.pch" /Yc"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Documents and Settings\Asus M2400N\Os meus documentos\ucl\memoire\simulation\msnemo\get_topo\StdAfx.cpp"
+]
+Creating command line "cl.exe @c:\WINDOWS\TEMP\RSP42F.tmp" 
+Creating temporary file "c:\WINDOWS\TEMP\RSP430.tmp" with contents
+[
+netcdf.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /incremental:yes /pdb:"Debug/get_topo.pdb" /debug /machine:I386 /out:"Debug/get_topo.exe" /pdbtype:sept 
+".\Debug\display_cdf.obj"
+".\Debug\get_topo.obj"
+".\Debug\prog_cdf.obj"
+".\Debug\StdAfx.obj"
+".\Debug\write_topo.obj"
+]
+Creating command line "link.exe @c:\WINDOWS\TEMP\RSP430.tmp"
+<h3>Output Window</h3>
+Compiling...
+StdAfx.cpp
+Compiling...
+display_cdf.cpp
+get_topo.cpp
+prog_cdf.cpp
+write_topo.cpp
+Generating Code...
+Linking...
+Creating command line "bscmake.exe /nologo /o"Debug/get_topo.bsc"  ".\Debug\StdAfx.sbr" ".\Debug\display_cdf.sbr" ".\Debug\get_topo.sbr" ".\Debug\prog_cdf.sbr" ".\Debug\write_topo.sbr""
+Creating browse info file...
+<h3>Output Window</h3>
+
+
+
+<h3>Results</h3>
+get_topo.exe - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

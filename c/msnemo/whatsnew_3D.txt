@@ -1,0 +1,853 @@
+11/08/2004 prog_w.exe v0.19
+
+-Creation d'un fichier masque de la topographie mondiale (jusqu'a 747 m de profondeur) a
+partir du ROSE. Cree pour cet effet un project sous VC++ denomme get_topo.
+
+-Assimilation du fichier masque dans nos blocs de memoire et dans la variable netcdf de sortie "fr".
+Enfin nous avons une topographie correcte et, donc,des frontieres realistes.
+
+************************************************************************************************************************
+14/06/2004 prog_w.exe v0.18a
+
+-Creation de blocs en memoire P,C et N pour chaque dimension i,j et k. Formule du type 
+			xn+1 = Pi*xi-1 + Ci*xi + Ni*xi+1 pour l'algo explicite
+			voir ci-dessous pour l'emploi dans l'algo implicite.
+
+-Refonte de l'algorithme explicite. J'ai adapte la formule ci-dessous. Ceci est 10X plus rapide mais requiert le double de la memoire employee.
+
+-Creation d'un algorithme implicite pour la coordonnee verticale. Formules du type 
+		gk = xn+1 - Pk*gk-1  (k croissant)
+		xn+1 = (gk - Nk*xn+1_k+1)/Ck (k decroissant).
+
+-J'ai renomme les structures avec des noms plus clairs. 
+
+-Gros bugs concernant la conservation de masse. A chercher...
+
+*Je devrais renommer les variables des structures maintenant avec des noms plus clairs aussi. A faire...
+
+*La conservation de masse foire en mode de grilles a taille variable. L'erreur est dans les blocs des coeffs P et N!!!
+Pi est affecte aux resolutions en i-1 et non en i! Ainsi, aussi pour Ni, qui sera affecte aux resolutions en i+1!
+
+*Une fois fait le 3D comparer pour les experiences de HE, de LR et de RT et IAEA. Obtenir les fichiers des vecteurs
+vitesse pour les annees correspondantes. Essayer reellement de reproduire les resultats de HE! Si ca marche alors je 
+peux commencer a travailler sur des scenarios dits "plus realistes" en alternative et puis enfin de produire un article
+sur tout cela.
+
+*Travailler avec matlab?
+
+************************************************************************************************************************
+28/05/2004 prog_w.exe v0.16a
+
+-Cree un vecteur avec les delta_z et les delta_y.
+-Pour avoir une bonne structure pour le schema vertical implicite nous avons cree des blocs de coefs qui representent
+le systeme qui est trois matrices tridiagonales.
+-Refonte de touts les algorithmes du schema numeriques (upwind et de diffusion). Beaucoup plus rapide!
+
+*2D Diffusion: ok!
+*2D advection: ok!
+
+*3D Bad :( C'est normal. Les causes sont decrites sur le point ci-dessous...
+
+*Parametres verticaux instables. Besoin d'un schema vertical implicite...
+
+*Ajuster les parametres et faire des tests...
+
+*Une fois fait le 3D comparer pour les experiences de HE, de LR et de RT et IAEA. Obtenir les fichiers des vecteurs
+vitesse pour les annees correspondantes. Essayer reellement de reproduire les resultats de HE! Si ca marche alors je 
+peux commencer a travailler sur des scenarios dits "plus realistes" en alternative et puis enfin de produire un article
+sur tout cela.
+
+*Travailler avec matlab?
+
+************************************************************************************************************************
+19/05/2004 prog_w.exe v0.15a
+
+-Mis en marche le 3D. Le plafond a la surface a les vitesses et les frontieres a zero! (verifier).
+-Semble marcher (conservation de la masse ok) mais il faut ajuster les parametres et mieux tester.
+
+*Attention: il faut creer un vecteur avec les delta_z et les delta_y!
+
+*Ajuster les parametres et faire des tests...
+
+*Une fois fait le 3D comparer pour les experiences de HE, de LR et de RT et IAEA. Obtenir les fichiers des vecteurs
+vitesse pour les annees correspondantes. Essayer reellement de reproduire les resultats de HE! Si ca marche alors je 
+peux commencer a travailler sur des scenarios dits "plus realistes" en alternative et puis enfin de produire un article
+sur tout cela.
+
+*Travailler avec matlab?
+
+************************************************************************************************************************
+19/05/2004 prog_w.exe v0.14
+
+-Mis x->tt a x->tt*so.concentration. Ceci m'economise une calculation par iteration.
+-Cree un fichier de code prog_cdf_out.cpp. Ceci me permet de clarifier le code.
+-Fait une cosmetique a mes fichiers de code. Maintenant ils sont plus lisibles.
+-Reunit touts les parametres importants actuels dans prog_prm.h
+-Attention! Le coef 0.5 n'etait pas present dans x->a, donc jusqu'a present j'avais des vitesses 2X rapides.
+-Gros changement dans l'algo: Mettre un schema d'adv avec des if est beaucoup plus rapide!! Plus de 2X plus rapide!
+ Mais il devient alors peut-etre moins sur... Aussi le code est beaucoup moins elegant.
+-Mis en option commente un schema 10% moins rapide mais 100X plus elegant.
+-Restructuration de l'algo pour la diffusion qui est maintenant 10% plus rapide.
+-Restructuration de l'algo principal qui rend les choses jusqu'a 20% plus rapides!
+
+*Manque faire le tout en 3D. Attention: il suffit de creer un vecteur avec les delta_z!
+
+*Attention! Les latitudes ne sont pas egalement espaces! Il faudrait regler ca au plus vite! Suffit d'un vecteur de delta_lat.
+
+*Une fois fait le 3D comparer pour les experiences de HE, de LR et de RT et IAEA. Obtenir les fichiers des vecteurs
+vitesse pour les annees correspondantes. Essayer reellement de reproduire les resultats de HE! Si ca marche alors je 
+peux commencer a travailler sur des scenarios dits "plus realistes" en alternative et puis enfin de produire un article
+sur tout cela.
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients. Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+************************************************************************************************************************
+18/05/2004 prog_w.exe v0.14
+
+-Corrige un bug qui ne creait pas correctement la matrice masque des frontieres. Ceci devrait corriger les problemes
+de comptabilite.
+
+-Annule la diffusion aux frontieres terrestres. 
+
+*Manque faire le tout en 3D. Attention: il suffit de creer un vecteur avec les delta_z!
+
+*Attention! Les latitudes ne sont pas egalement espaces! Il faudrait regler ca au plus vite! Suffit d'un vecteur de delta_lat.
+
+*Une fois fait le 3D comparer pour les experiences de HE, de LR et de RT et IAEA. Obtenir les fichiers des vecteurs
+vitesse pour les annees correspondantes. Essayer reellement de reproduire les resultats de HE! Si ca marche alors je 
+peux commencer a travailler sur des scenarios dits "plus realistes" en alternative et puis enfin de produire un article
+sur tout cela.
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients. Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+************************************************************************************************************************
+16/05/2004 prog_w.exe v0.14
+
+-Cree une MACRO LEAK_MASS_ON/_OFF pour calculer la masse qui se faufile a travers le domaine. Aussi une variable reelle
+"leak" fut cree dans la structure s_parameters afin de comptabiliser la fuite de traceur a travers les limites du domaine.
+
+-Teste la conservation de masse du traceur pour les schemas pour l'advection (upwind) et pour la diffusion. Elle 
+se conserve dans les deux cas.
+
+*Toutefois il faut traiter la diffusivite aux frontieres terrestres. L'annuler (ref.Deleersnijder). Meme chose pour la
+diffusivité verticale (l'annuler en surface par exemple).
+
+*Manque faire le tout en 3D. Attention: il suffit de creer un vecteur avec les delta_z!
+
+*Attention! Les latitudes ne sont pas egalement espaces! Il faudrait regler ca au plus vite! Suffit d'un vecteur de delta_lat.
+
+*Une fois fait le 3D comparer pour les experiences de HE, de LR et de RT et IAEA. Obtenir les fichiers des vecteurs
+vitesse pour les annees correspondantes. Essayer reellement de reproduire les resultats de HE! Si ca marche alors je 
+peux commencer a travailler sur des scenarios dits "plus realistes" en alternative et puis enfin de produire un article
+sur tout cela.
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients. Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+************************************************************************************************************************
+14/05/2004 prog_w.exe v0.13a
+
+-Resolut le probleme des dimensions du schema numerique du terme source.
+
+-Probleme perce: c'etait une condition de stabilite du schema d'advection. Celle-ci m'oblige d'ailleurs a diminuer mon pas temporel enormement! J'en suis à 16h!
+
+-Le modele sait deja tourner avec une tache unitaire.
+
+-Le modele a besoin de 800 iterations/an pour etre stable numeriquement. J'ai donc cree une macro DIX_ANS/UN_AN en fonction
+de laquelle je tourne sur une annee ( 10X moins long a attendre ).
+
+-Cree Macro UCONSTSWITCH_OFF/_ON selon laquelle on peut avoir un schema upwind avec vitesses constantes ou pas (pour
+faire des tests aux schemas numeriques).
+
+-Cree Macro CALCSWITCH_ON/_OFF pour pouvoir tester sans faire les calculs la creation des fichiers en netcdf.
+
+*Manque faire le tout en 3D. Coord verticale generalisee.
+
+*Attention! Les latitudes ne sont pas egalement espaces! Il faudrait regler ca au plus vite!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+************************************************************************************************************************
+13/05/2004 prog_w.exe v0.13a
+
+-Probleme perce: c'etait une condition de stabilite du schema d'advection. Celle-ci m'oblige d'ailleurs a diminuer mon pas temporel enormement! J'en suis à 16h!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+
+************************************************************************************************************************
+08/05/2004 prog_w.exe v0.13a
+
+-Parabens Cristiana! Feliz aniversario :)
+-Probleme dans le schema numerique: meme avec des vitesses constantes ca marche mal (j'ai deja vu ce genre de chose
+arriver...a percer pour la prochaine fois...).
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+07/05/2004 prog_w.exe v0.13a
+
+-EUREKA! Il tourne jusqu'au bout et ca marche! J'ai obtenu des champs de vitesses bons et centrables en plein pacifique!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+06/05/2004 prog_w.exe v0.13a
+
+-Eureka. Il tourne jusqu'au bout. Seulement mes valeurs de mes parametres sont absolument bidons... A chercher mieux...
+
+*Il ne manque plus que corriger le fichier netcdf de output; le remplir avec mes resultats (avec option de vitesses ou pas).
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+25/04/2004 prog_w.exe v0.13a
+
+-Cree le cdf_dataread qui remplit les blocs de memoire avec les donnees des netcdf. Ca semble ok. Manque voir le resultat.
+
+*Il ne manque plus que: creer un fichier netcdf de output; le remplir avec mes resultats (avec option de vitesses ou pas).
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+23/04/2004 prog_w.exe v0.13a
+
+-Bien, j'ai deja debugge touts mes parametres par lecture des netcdf.
+
+*Il ne manque plus que: refaire le remplissage des matrices (source, frontiere, V_u, V_v et V_w); creer un fichier netcdf
+de output; le remplir avec mes resultats (avec option de vitesses ou pas).
+
+*Il faut pouvoir centrer les champs de vitesse autour de mururoa! Mais le faire plutot avec netcdf!
+
+*Il faut corriger la mise en place de t->a et t->b. Il faut corriger les sources et les frontieres!
+
+*Il faudrait refaire l'input des vitesses plus proprement avec une bibliotheque pour netcdf!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+22/04/2004 prog_w.exe v0.13a
+
+-Bien, j'ai deja initie touts mes parametres en lisant les netcdf. Manque encore tester (sous debug).
+
+*Il ne manque plus que: refaire le remplissage des matrices (source, frontiere, V_u, V_v et V_w); creer un fichier netcdf
+de output; le remplir avec mes resultats (avec option de vitesses ou pas).
+
+*Il faut pouvoir centrer les champs de vitesse autour de mururoa! Mais le faire plutot avec netcdf!
+
+*Il faut corriger la mise en place de t->a et t->b. Il faut corriger les sources et les frontieres!
+
+*Il faudrait refaire l'input des vitesses plus proprement avec une bibliotheque pour netcdf!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+20/04/2004 prog_w.exe v0.13a
+
+-Ok, j'ai enfin reellement commence la creation des donnees a partir des fichiers netcdf. Ouf!
+
+*Il faut pouvoir centrer les champs de vitesse autour de mururoa! Mais le faire plutot avec netcdf!
+
+*Il faut corriger la mise en place de t->a et t->b. Il faut corriger les sources et les frontieres!
+
+*Il faudrait refaire l'input des vitesses plus proprement avec une bibliotheque pour netcdf!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+10/04/2004 prog_w.exe v0.13a
+
+-Joyeux anniversaire Alfonso! 24 ans! Un si bel age!
+
+*Il faut pouvoir centrer les champs de vitesse autour de mururoa! Mais le faire plutot avec netcdf!
+
+*Il faut corriger la mise en place de t->a et t->b. Il faut corriger les sources et les frontieres!
+
+*Il faudrait refaire l'input des vitesses plus proprement avec une bibliotheque pour netcdf!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+09/04/2004 prog_w.exe v0.13a
+
+-Mise sous VC++6.0. Mise en marche de netcdf.h! Debut d'une restructuration finale!
+
+-L'ideal serait: 
+		PARAMETRES PHYSIQUES
+	1-Sous un menu, ouvrir un fichier de vitesses .cdf, voir mes parametres de selection, pouvoir les fixer et creer
+	  les blocs de memoire. Ceci pour u, v et w. Possibilite d'option U&T_cells.
+	2-Definir ma source. Son type (instantannee ou a debit constant) et sa quantite totale.
+	3-A partir des donnees des fichiers de vitesses, definir les parametres physiques: L, V, L_v, V_v.
+	4-Definir les autres parametres physiques: T(HE,RT,LR) = 10 ans en principe.
+		PARAMETRES NUMERIQUES
+	5-A partir des fichiers definir les parametres numeriques: I, J, K => dx,dy,dz(z). Fermer les fichiers.
+	6-Definir les parametres numeriques: N(L,V,I,J) => dt et D (qui dit pour enregistrer les valeurs touts les N%D==0).
+	7-Choisir mon schema numerique (upwind ou hybride, avec ou sans diffusion).
+		RESULTATS
+	8-Creer un fichier .cdf de output et l'ouvrir pour ecriture.
+	9-Lancer le calcul et inscrire les resultats dans le fichier .cdf cree.
+	10-Fermer le fichier .cdf de output.
+
+-En reorganisant par l'ordre chronologique du code il vient:
+	L'utilisateur donne les fichiers .cdf pour u, v et w.
+	Lire les cdf des vitesses pour obtenir les bornes: (2 long, 2 lat, 2 temps, 2 profondeurs). (get_edges()).
+	1ers parametres donnes par l'utilisateur encadres par les bornes(2 long, 2 lat, 1 temps, 1(ou 2) profondeur(s)).
+	Autres parametres donnes par l'utilisateur: 2, 4, 6, 7.
+	Creer les blocs de memoire: 1.
+	Lire les cdf des vitesses: 1, 3, 5.
+	Calculer: 8, 9, 10.	 
+
+-Idee: cree un .xls avec mes parametrisations et adimensionalisations depuis L,V,T jusqu'a t->a et t->b.
+
+*Il faut pouvoir centrer les champs de vitesse autour de mururoa! Mais le faire plutot avec netcdf!
+
+*Il faut corriger la mise en place de t->a et t->b. Il faut corriger les sources et les frontieres!
+
+*Il faudrait refaire l'input des vitesses plus proprement avec une bibliotheque pour netcdf!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+08/04/2004 prog_w.exe v0.12b
+
+-Corrige des bugs. Attention coefficient correct pour taille_X = 10. t->a et t->b est calcule de facon incorrecte.
+
+-Ok: J'ai des frontieres et une source. Que faut-il d'autre maintenant?
+
+*Il faut pouvoir centrer les champs de vitesse autour de mururoa! Mais le faire plutot avec netcdf!
+
+*Il faut corriger la mise en place de t->a et t->b. Il faut corriger les sources et les frontieres!
+
+*Il faudrait refaire l'input des vitesses plus proprement avec une bibliotheque pour netcdf!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+02/04/2004 prog_w.exe v0.12a
+
+-Obtenu (enfin) des fichiers txt avec les champs de vitesse.
+
+-Creation d'une structure s_cdl qui contient le nom du fichier et de la variable ainsi que ses dimensions.
+
+-Mise en place de routines qui lisent et remplissent les blocs des vitesses.
+
+*Il faudrait refaire l'input des vitesses plus proprement avec une bibliotheque pour netcdf!
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+30/03/2004 prog_w.exe v0.11b
+
+-Additionne des fonctions d'incrementation et de decrementation de l'addressement base des blocs de memoire dans
+prog_all.c.(Manque de les tester!)
+
+-Corrige le bug des vitesses aux frontieres S et W.
+
+-Teste 3D: upwind, diffusion, source semblent ok! Pas teste hybride du aux mauvais resultats en 2D.
+
+*Eventuellement, si je ne garde que le schema upwind, alors employer le codage hyper-rapide des (5)7 matrices de coefficients.
+Soit un total de (7)9 blocs doubles et 2 blocs char au lieu de (4)6 blocs doubles et 2 blocs char!
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Mettre les matrices des champs de vitesses dans le fichier .cdf (et pourquoi pas aussi les matrices sources
+et frontieres).
+
+*Il faudrait ajouter des fonctions de lecture de CDF pour obtenir les champs de vitesse ainsi que les frontieres.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+30/03/2004 prog_w.exe v0.11b
+
+-Changement brutal dans les routines numeriques. Maintenant elles sont bonnes (mais plus lentes). Grande
+amelioration dans la lisibilite!
+2D:Source,diff,upwind OK! Hybride, bof :( Le prof m'en dira. 
+3D:Pas encore teste. J'ose pas ;)
+
+-Refonte de blc.c et .h a partir des macros de 3D.h. Amelioration de la lisibilite.
+
+-J'ai rejecte l'idee et son code d'employer des matrices masques pour le signal des vitesses.
+
+*Il faudrait des fonctions en all.c pour incrementer ou decrementer le pointeur base des blocs.
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Mettre les matrices des champs de vitesses dans le fichier .cdf (et pourquoi pas aussi les matrices sources
+et frontieres).
+
+*Il faudrait ajouter des fonctions de lecture de CDF pour obtenir les champs de vitesse ainsi que les frontieres.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+29/03/2004 prog_w.exe v0.11a
+
+-Optimisation des routines numeriques: rajoute les indexes in et ip pour eviter les repetitions abusives de i+1 et i-1.
+Aussi ameliore substanciellement la routine hybride!
+
+-Mise en place des matrices masques pour des champs de vitesses aleatoires dans un systeme de grillage Arakawa-B staggered.
+Adapte pour le 2D dans blc.c et h, et dans 3d.c et .h.
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Mettre les matrices des champs de vitesses dans le fichier .cdf (et pourquoi pas aussi les matrices sources
+et frontieres).
+
+*Il faudrait ajouter des fonctions de lecture de CDF pour obtenir les champs de vitesse ainsi que les frontieres.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+28/03/2004 prog_w.exe v0.11a
+
+-Mise en place de b_blocs masques pour le signe des vitesses. Ceci ocupe 2*d*T de memoire en plus ou d est le 
+nombre de dimensions et T est la taille d'un blocs de memoire en chars.Manque finir
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Mettre les matrices des champs de vitesses dans le fichier .cdf (et pourquoi pas aussi les matrices sources
+et frontieres).
+
+*Il faudrait ajouter des fonctions de lecture de CDF pour obtenir les champs de vitesse ainsi que les frontieres.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+26/03/2004 prog_w.exe v0.10a
+
+-Mise en route de MATLAB 6.5 avec mexcdf53 et des packages de manipulation de netcdfs.
+-Installation pour MATLAB et windows du package de DODS client (Distributed Oceanographical Data System).
+
+*apprendre a travailler avec MATLAB pour mes graphiques de concentration en traceur.
+
+*Mettre les matrices des champs de vitesses dans le fichier .cdf (et pourquoi pas aussi les matrices sources
+et frontieres).
+
+*Il faudrait ajouter des fonctions de lecture de CDF pour obtenir les champs de vitesse ainsi que les frontieres.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+23/03/2004 prog_w.exe v0.10a
+
+-Cree le type bool_t dans prog_boo.h et cree des types vecteurs, tables et cubes associes
+ainsi que leurs fonctions d'allocation en memoire dans prog_all.c et .h.
+Ce type me sert a creer des matrices avec des valeurs booleennes pour les sources et frontieres du reseau.
+D'ailleurs j'ai cree les matrices C_fr et C_so pour les frontieres et sources dans la structure  s_blocs.
+-Cree les matrices de vitesses dans la structure s_blocs et initialisees.
+-Initialisees les matrices C_so et C_fr et implementees dans le code de la 3D.
+-Quelques simplifs dans la lisibilite de prog_3d.c avec des macros.
+
+*Mettre les matrices des champs de vitesses dans le fichier .cdf (et pourquoi pas aussi les matrices sources
+et frontieres).
+
+*Lire les .cdf en MATLAB pour avoir de meilleurs graphiques.
+
+*Il faudrait ajouter des fonctions de lecture de CDF pour obtenir les champs de vitesse ainsi que les frontieres.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+************************************************************************************************************************
+23/03/2004 prog_w.exe v0.9c
+
+-teste touts les autres algoritmes. Ok, resultats satisfaisant.
+-Change les fichiers prog_cdl.c,etc... pour pouvoir alterner facilement entre 2D et 3D.
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+*Il faudrait peut-etre integrer mes champs de vitesse dans le programme, non? Il faudrait aussi peut-etre d'abord les 
+creer. Comment? Avec netcdf.lib sous linux ou en lisant et ecrivant des cdl sous winxp? D'abord 2D puis 3D.
+
+************************************************************************************************************************
+22/03/2004 prog_w.exe v0.9b
+
+-Elimine les bugs principaux.
+-Mais les coeff. adim verticaux sont identiques aux coeffs adim horizontaux (prog_prm.c)!
+-Cree une stain en 3D mais il faut une resolution verticale d'au moins 50 palets! 
+
+*Le code ne saurait pas marcher avec une stain unitaire apparemment. Pourquoi pas? Mystere...a percer plus tard.
+
+*Il faudrait peut-etre integrer mes champs de vitesse dans le programme, non? Il faudrait aussi peut-etre d'abord les 
+creer. Comment? Avec netcdf.lib sous linux ou en lisant et ecrivant des cdl sous winxp? D'abord 2D puis 3D.
+
+************************************************************************************************************************
+22/03/2004 prog_w.exe v0.9a
+
+-Optimise la routine de cdl_Write() en mettant l'ordre naturel j(i). Ceci devrait accelerer l'ecriture.
+-Les routines numeriques sont adaptees pour les blocs cube_t mais il manque les calculs concernant la
+composante verticale.
+-Changement du tout pour le 3D.
+
+*bugs... 
+
+*Il faudrait peut-etre integrer mes champs de vitesse dans le programme, non? Il faudrait aussi peut-etre d'abord les 
+creer. Comment? Avec netcdf.lib sous linux ou en lisant et ecrivant des cdl sous winxp? D'abord 2D puis 3D.
+
+************************************************************************************************************************
+21/03/2004 prog_w.exe v0.8b
+
+*En train d'essayer de mettre une syntaxe d'emploi "..\>prog_w -hy -nd -ns <filename>"
+
+*Il serait cool en effet d'optimizer les schemas numeriques...
+
+*Il ne manque plus beaucoup pour l'implementation 3D!
+
+*Il faudrait peut-etre integrer mes champs de vitesse dans le programme, non? Il faudrait aussi peut-etre d'abord les 
+creer. Comment? Avec netcdf.lib sous linux ou en lisant et ecrivant des cdl sous winxp?
+
+************************************************************************************************************************
+20/03/2004 prog_w.exe v0.8a
+
+-Changement grave dans les routines numeriques.
+-Creation des routines calcule() et calc_...() pour refaire un code numerique plus performant.
+-Mis la variable schema dans la structure s_parameters.
+-Reecrit la routine prompt_user() de main.c.
+
+*Il serait bien de mettre des options du type ..\>prog_w -hy -nd -ns -h <filename> avec le default mis a -up.
+Voir d'autres programes en open source pour avoir deja un code propre.
+
+*Il serait cool en effet d'optimizer les schemas numeriques...
+
+*Il ne manque plus beaucoup pour l'implementation 3D!
+
+*Il faudrait peut-etre integrer mes champs de vitesse dans le programme, non? Il faudrait aussi peut-etre d'abord les 
+creer. Comment? Avec netcdf.lib sous linux ou en lisant et ecrivant des cdl sous winxp?
+
+************************************************************************************************************************
+19/03/2004 prog_w.exe v0.7
+
+-Cree un fichier prog_prm.c et .h ou j'y ai mis tout sur les parametres (routine initialiser() incluse).
+
+-Cree un fichier prog_blc.c et .h ou j'ai tout mis sur les blocs. En particulier les routines de create_blocs. J'ai aussi
+cree une routine de free_blocs.
+
+-Cree un header prog_ind.h ou j'ai tout mis sur les indexes (il n'y avait que la structure pratiquement).
+
+*Il ne manque plus beaucoup pour l'implementation 3D!
+
+*Il faudrait peut-etre integrer mes champs de vitesse dans le programme, non? Il faudrait aussi peut-etre d'abord les 
+creer.Comment? Avec netcdf.lib sous linux ou en lisant et ecrivant des cdl sous winxp?
+
+************************************************************************************************************************
+18/03/2004 prog_w.exe v0.7b
+
+-Fait typedef index_t pour les indexeurs (i,j,k,n etc...).
+
+-Fait une structure s_indexes contenant i,j,k,n. Puis j'ai fait l'adaptation a tout le code.
+Ceci ameliore la structure du code enormement.
+
+*Il manque d'implementer le premier "*" de la derniere fois.
+
+*Creer un fichier parametre pour toutes les routines et definitions sur la structure s_parametres.
+
+*Creer un fichier prog_bloc contenant toutes les routines faites sur les blocs.
+
+*Creer une structure s_blocs contenant les bloc_t C_old et C_new;
+
+*Faire une fonction free_blocs qui libere une s_blocs; 
+
+*Il ne manque plus beaucoup pour l'implementation 3D!
+
+*Il faudrait peut-etre integrer mes champs de vitesse dans le programme, non? Il faudrait aussi peut-etre d'abord les 
+creer.Comment? Avec netcdf.lib sous linux ou en lisant et ecrivant des cdl sous winxp?
+
+************************************************************************************************************************
+17/03/2004 prog_w.exe v0.7
+
+-Amelioration de la routine pour la source. Mise en place de la routine source. Creation de nouvelles variables entieres
+dans s_parametres qui donnent l'information necessaire sur la position et la taille de la "tache" de traceur.
+
+-Amelioration de la lisibilite en creant une fonction qui realise l'allocation des blocs de memoire ainsi que
+leur remplissage avec les conditions initiales (create_blocs()).
+
+-Mise en marche des termes de source (les fonctions So() et Pu());
+
+-Optimization des routines numeriques: moins de parametres d'entree (synthetises dans la var s_parameters).
+
+-Bonne optimization de la routine hybride (un seul appel aux fonctions beta_i() et beta_j() ).
+
+*Il manque d'implementer le premier "*" de la derniere fois. Mais le temps d'execution est deja implemente.
+
+*Il ne manque plus beaucoup pour l'implementation 3D!
+
+*Il faudrait peut-etre integrer mes champs de vitesse dans le programme, non? Il faudrait aussi peut-etre d'abord les 
+creer.Comment? Avec netcdf.lib sous linux ou en lisant et ecrivant des cdl sous winxp?
+
+*creer une structure d'indexes ou bien un array; je ne sais pas. Bref quelque chose qui me permette facilement d'augmenter
+le nombre d'indexes et qui me clarifie mon code du coup sans trop l'allonger. Je pense qu'une structure avec un typedef
+aurait ses avantages.
+
+************************************************************************************************************************
+10/03/2004 prog_w.exe v0.6
+
+-Definition des routines d'allocation de memoire de blocs 3D, definition du type cube_t.
+
+-Optimization du code en definissant un nouveau type bloc_t. Maintenant variables de donnees en memoire sont des
+bloc_t. Actuellement une variable bloc_t n'est autre qu'une table_t. L'objectif est de la faire devenir un cube_t.
+
+*Il manque d'implementer le premier "*" de la derniere fois. Mais le temps d'execution est deja implemente.
+
+************************************************************************************************************************
+09/03/2004 prog_w.exe v0.6a
+
+-Creation d'un nouveau projet pour win32 en mode console sous BC45. Ceci permet de grandes allocations de memoire.
+
+-Creation d'un nouveau fichier node prog_io.c et .h contenant les routines de scanf() d'entiers et de reels. Ceci
+a l'avantage de m'economiser quelques lignes de code et rendre l'ensemble plus efficient, aussi, comme ca, ca marche.
+
+*Il manque d'implementer le premier "*" de la derniere fois. Mais le temps d'execution est deja implemente.
+
+************************************************************************************************************************
+08/03/2004 prog_c.exe v0.5.
+
+-Creation du fichier todo.txt contenant les principales etapes manquantes du projet.
+
+*Il manque d'implementer le premier "*" de la derniere fois. Mais le temps d'execution est deja implemente.
+
+************************************************************************************************************************
+06/03/2004 prog_c.exe v0.5b+
+
+-Cree un fichier batch nemo.bat avec comme parametre d'entree le nom du fichier cdf sans l'extension(ex:..\:nemo result).
+Ils sont maintenant places dans un repertoire nemo avec le fichier choice.com du ms-dos 6.xx. A l'execution du batch, le
+programe est lance, puis aussitot qu'un fichier cdl est cree, le batch lance ncgen.exe pour cree le fichier cdf et, 
+ensuite, il efface le fichier cdl.
+
+-Change la main() du programe: maintenant elle prend un parametre d'entree qui est le nom du fichier de output pour le
+fichier cdl.
+
+*Il manque d'implementer le premier "*" de la derniere fois. Mais le temps d'execution est deja implemente.
+
+************************************************************************************************************************
+05/03/2004 prog_c.exe v0.4
+
+-Implementation du systeme invariant par les parametres.
+
+-Le menu demande maintenant des vitesses reelles adimensionnalises et non le nombre de Courant.
+
+*Il faut tester si avec les parametres choisis les flux d'advection semblent reels.
+
+*Il manque d'implementer le premier "*" de la derniere fois. Mais le temps d'execution est deja implemente.
+
+************************************************************************************************************************
+03/03/2004 prog_c.exe v0.4a
+
+-Inputs de l'utilisateur mieux controles. Programme plus sur de ne pas planter.
+
+-Emploi de clock() pour controler le temps des iterations.
+
+*Il manque d'implementer le premier "*" de la derniere fois. Mais le temps d'execution est deja implemente.
+
+*Manque tester la stabilite du prog et la compatibilite avec ncbrowse.
+
+*Implementer le concept de systeme invariant par les parametres (question de zoom...y reflechir).
+
+************************************************************************************************************************
+01/03/2004 prog_c.exe v0.3
+
+-Creation d'un fichier cdl avec plusieurs temps.
+
+*Il manque d'implementer le premier "*" de la derniere fois.
+
+*Manque tester la stabilite du prog et la compatibilite avec ncbrowse.
+
+*Implementer le concept de systeme invariant par les parametres (question de zoom...y reflechir).
+
+************************************************************************************************************************
+29/02/2004 prog_c.exe v0.2
+
+-Creation d'une structure de type parametres qui contient touts les parametres du traceur. Ceci simplifie.
+
+*Chercher une fonction qui teste le temps d'execution du programe avec ou sans les IFs dans les routines numeriques.
+Chercher des alternatives aux IFs plus economiques. Optimizer les routines.
+
+*Creer un fichier cdl avec plusieurs temps. Tester d'abord sur ncbrowse.
+
+************************************************************************************************************************
+29/02/2004 prog_c.exe v0.1
+
+-Description: Cree un fichier netCDL de la dispersion d'un traceur. L'utilisateur choisi un de six schemas, le nombre
+d'iterations a la creation du cdf, la taille de la maille ainsi que les nombres de Courant en x et en y (la vitesse 
+d'advection en x,y). Finalment l'utilisateur definit le nom du fichier de output (cdl).
+
+-Creation du cdf: avec l'utilitaire ncgen.exe on obtient un fichier cdf a partir du cdl. Avec ncbrowse on peut faire de
+beaux graphiques a partir des cdf. La ligne de commande est: ncgen -o <output>.cdf <input>.cdl.
+
+-fichiers prog_mai.c, prog_all.c, prog_2da.c, prog_cdl.c.
+
+prog_mai.c : contient la structure principale du programe.
+{
+	routines: 
+		-main() : main du programe.
+}
+
+
+prog_all.c: contient les routines d'allocation de memoire.
+{
+	routines: 
+		- array_alloc(int N, int p): Alloue en memoire un vecteur de (p,N,p) doubles (ou p sont les bornes)
+			et rend un pointeur vers (N).
+		- table_alloc(int I, int J,int p): Alloue en memoire une matrice de doubles de taille (I+2p)x(J+2p)
+			et rend un pointeur vers une matrice de taille IxJ. 
+		- table_free(double **table, int N, int p):  Libere la memoire de la matrice table ainsi que ses bornes.
+}
+
+prog_2da.c: contient les routines des schemas numeriques de l'equation du traceur.
+{
+	routines:
+		- beta_i(int i, int j, double **Cp): calcule le coefficient de decentrement du shema hybride de I.D.James
+			pour la coordonnee x a la position (i,j) de la table Cp.
+		- beta_j(int i, int j, double **Cp): calcule le coefficient de decentrement du shema hybride de I.D.James
+			pour la coordonnee y a la position (i,j) de la table Cp.
+		- So(): Fonction de la source.
+		- Pu(): Fonction des puits (a disparaitre).
+		- iterate_source(): calcule une iteration pour le schema SOURCE.
+		- iterate_diffusion(): calcule une iteration pour le schema DIFFUSION.
+		- iterate_upwind(): calcule une iteration pour le schema UPWIND.
+		- iterate_hybride(): calcule une iteration pour le schema HYBRIDE.
+		- iterate_hybrusion(): calcule une iteration pour le schema DIFFUSION+HYBRIDE.
+		- iterate_upwinfusion(): calcule une iteration pour le schema DIFFUSION+UPWIND.
+		- initialization(): initialise les variables du programe.
+		- prompt_user(): routine qui demande a l'utilisateur de choisir un schema numerique.
+}
+
+prog_cdl.c: contient les routines de creation et d'ecriture de fichiers cdl.
+{
+	routines:
+		- txt2cdl(): routine qui ecrit le cdl. Dimensions x,y et t. Variable C, la concentration du traceur.
+			Les donnees sont dans la matrice table. Ne contient qu'un seul temps.
+}
+
+* Cette version semble bien marcher pourvu que les matrices ne soient pas trop grandes (1000x1000).
+
+************************************************************************************************************************
+26/02/2004 fichier two_db.c
+
+-Simule 6 schemas numeriques differents sur une maille 2D. Advection upwind ou hybride avec le schema FCTS.
+Diffusion explicite. Termes de sources implementes avec des fonctions bidon.
+-Resultats ecrits sur un fichier .txt.
+-Champ de vitesses uniforme, controle par deux parametres (en x et en y): le nombre de Courant.
+-Concentration initiale donnee arbitrairement codee dans le main.
+-Corrige le schema d'advection pour des vitesses positives OU negatives (emploi des differences avant ou arrieres).
+
+*Faire plus de tests.
+*Implementer une facon d'obtenir un output graphique.
+
+************************************************************************************************************************
