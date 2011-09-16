@@ -1,11 +1,20 @@
-#ifndef COLECAO
+#ifndef _CLASS_EXTENDIDA
+#define _NO_USE
+#endif
 
-#define COLECAO colecao
-#define CLASS_COLECAO class_colecao
+#ifndef _C_EXTENDIDA
+#define _C_EXTENDIDA C_extendida
+#endif
 
-#endif 
+#ifndef _CLASS_COLECAO
+#define _CLASS_COLECAO class_colecao
+#endif
 
-module class_COLECAO
+#ifndef _C_COLECAO
+#define _C_COLECAO C_colecao
+#endif
+
+module _CLASS_COLECAO
 
   !When using classes in fortran 2003, try considering that'%' and 'target' 
 
@@ -15,29 +24,28 @@ module class_COLECAO
 
   !result instead.
 
+#ifndef _NO_USE
+
+  use _CLASS_EXTENDIDA
+
+#endif  
+
   implicit none
 
   private
 
-  public C_lista_COLECAO
+  type C_extendida
+  end type C_extendida
 
-  type                    :: colecao
+  public _C_COLECAO
 
-    !Empty fake type
-
-  end type colecao
-
-  type, extends(COLECAO)  :: C_lista_COLECAO
+  type, extends(_C_EXTENDIDA)  :: _C_COLECAO
 
     integer                         :: id = 1
 
-    integer                         :: _OLA
+    class(_C_COLECAO), pointer       :: fundador => null()
 
-    integer                         :: COLECAO
-
-    class(C_lista_COLECAO), pointer       :: fundador => null()
-
-    class(C_lista_COLECAO), pointer       :: seguinte => null()
+    class(_C_COLECAO), pointer       :: seguinte => null()
 
   contains
 
@@ -69,7 +77,7 @@ module class_COLECAO
 
     procedure                       :: temSeguinte => temSeguinte_nodo
 
-    !C_lista_COLECAO methods
+    !_C_COLECAO methods
 
     procedure                       :: adicionar => adicionar_nodo
 
@@ -91,7 +99,7 @@ module class_COLECAO
 
     procedure                       :: finalizar => remover_lista
 
-  end type C_lista_COLECAO
+  end type _C_COLECAO
 
 contains
 
@@ -99,9 +107,9 @@ contains
 
   subroutine iniciar_lista(self, id)
 
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
-    class(C_lista_COLECAO), pointer     :: ptr
+    class(_C_COLECAO), pointer     :: ptr
 
     integer, optional             :: id
 
@@ -131,7 +139,7 @@ contains
 
   subroutine defineId_nodo(self, id)
 
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
     integer                       :: id
 
@@ -141,9 +149,9 @@ contains
 
   subroutine definePrimeiro_nodo(self, primeiro)
 
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
-    class(C_lista_COLECAO), pointer     :: primeiro
+    class(_C_COLECAO), pointer     :: primeiro
 
     self%fundador => primeiro
 
@@ -151,9 +159,9 @@ contains
 
   subroutine defineSeguinte_nodo(self, seguinte)
 
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
-    class(C_lista_COLECAO), pointer     :: seguinte
+    class(_C_COLECAO), pointer     :: seguinte
 
     self%seguinte => seguinte
 
@@ -167,9 +175,9 @@ contains
 
   subroutine obterProprio_nodo(self, proprio)
 
-    class(C_lista_COLECAO), target                    :: self
+    class(_C_COLECAO), target                    :: self
 
-    class(C_lista_COLECAO), pointer, intent(out)      :: proprio
+    class(_C_COLECAO), pointer, intent(out)      :: proprio
 
     proprio => self
 
@@ -177,7 +185,7 @@ contains
 
   function obterId_nodo(self) result(id)
 
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
     integer                        :: id
 
@@ -187,9 +195,9 @@ contains
 
   subroutine obterPrimeiro_nodo(self, primeiro)
 
-    class(C_lista_COLECAO)                          :: self
+    class(_C_COLECAO)                          :: self
 
-    class(C_lista_COLECAO), pointer, intent(out)    :: primeiro
+    class(_C_COLECAO), pointer, intent(out)    :: primeiro
 
     primeiro => self%fundador
 
@@ -197,9 +205,9 @@ contains
 
   subroutine obterSeguinte_nodo(self, seguinte)
 
-    class(C_lista_COLECAO)                        :: self
+    class(_C_COLECAO)                        :: self
 
-    class(C_lista_COLECAO), pointer, intent(out)  :: seguinte
+    class(_C_COLECAO), pointer, intent(out)  :: seguinte
 
     if ( self.temSeguinte() ) then
 
@@ -217,7 +225,7 @@ contains
 
   function temPrimeiro_nodo(self) result(tem)
   
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
     logical                       :: tem
 
@@ -235,7 +243,7 @@ contains
 
   function temSeguinte_nodo(self) result(tem)
 
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
     logical                       :: tem
 
@@ -251,13 +259,13 @@ contains
 
   end function temSeguinte_nodo
 
-  !C_lista_COLECAO methods
+  !_C_COLECAO methods
   
   subroutine adicionar_nodo(self)
 
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
-    class(C_lista_COLECAO), pointer     :: ultimo, new, primeiro
+    class(_C_COLECAO), pointer     :: ultimo, new, primeiro
 
     if ( .not. self.temPrimeiro() ) then
 
@@ -291,11 +299,11 @@ contains
 
     !usage: end do
 
-    class(C_lista_COLECAO)                             :: self
+    class(_C_COLECAO)                             :: self
 
-    class(C_lista_COLECAO), pointer, intent(inout)     :: item
+    class(_C_COLECAO), pointer, intent(inout)     :: item
 
-    class(C_lista_COLECAO), pointer                    :: ptr, itemZero => null()
+    class(_C_COLECAO), pointer                    :: ptr, itemZero => null()
 
     logical                                      :: keepup
 
@@ -341,11 +349,11 @@ contains
 
   subroutine obter_nodo(self, id, nodo)
 
-    class(C_lista_COLECAO)                            :: self
+    class(_C_COLECAO)                            :: self
 
     integer                                     :: id
     
-    class(C_lista_COLECAO), pointer, intent(out)      :: nodo
+    class(_C_COLECAO), pointer, intent(out)      :: nodo
 
     call self.obterPrimeiro(nodo)
 
@@ -369,11 +377,11 @@ contains
 
   subroutine obterAnterior_nodo(self, anterior)
 
-    class(C_lista_COLECAO)                            :: self
+    class(_C_COLECAO)                            :: self
 
-    class(C_lista_COLECAO), pointer, intent(out)      :: anterior
+    class(_C_COLECAO), pointer, intent(out)      :: anterior
     
-    class(C_lista_COLECAO), pointer                   :: seguinte
+    class(_C_COLECAO), pointer                   :: seguinte
 
     call self.obterPrimeiro(anterior)
 
@@ -393,7 +401,7 @@ contains
 
           write(*,*) 'WARN 001: Nao foi encontrado o nodo anterior na colecao'
 
-          write(*,*) 'lista_COLECAO corrompida.'
+          write(*,*) '_C_COLECAO corrompida.'
 
           exit
           
@@ -407,9 +415,9 @@ contains
 
   subroutine obterUltimo_nodo(self, ultimo)
 
-    class(C_lista_COLECAO)                            :: self
+    class(_C_COLECAO)                            :: self
 
-    class(C_lista_COLECAO), pointer, intent(out)      :: ultimo
+    class(_C_COLECAO), pointer, intent(out)      :: ultimo
 
     call self.obterProprio(ultimo)
 
@@ -423,15 +431,15 @@ contains
 
   subroutine mostrarId_nodo(self)
 
-    class(C_lista_COLECAO)          :: self
+    class(_C_COLECAO)          :: self
 
-    class(C_lista_COLECAO), pointer :: ptr
+    class(_C_COLECAO), pointer :: ptr
 
     call self.obterAnterior(ptr)
 
     if ( self.obterId() .eq. ptr.obterId() ) then
 
-      write(*,*) 'O item e o fundador da lista.'
+      write(*,*) 'O item e o fundador da lista de _C_EXTENDIDA.'
 
     else
 
@@ -445,7 +453,7 @@ contains
 
     if ( .not. self.temSeguinte() ) then
 
-      write(*,*) 'O item e o ultimo da lista.'
+      write(*,*) 'O item e o ultimo da lista de _C_EXTENDIDA.'
 
     else
 
@@ -459,9 +467,9 @@ contains
 
   subroutine mostrar_lista(self)
 
-    class(C_lista_COLECAO)          :: self
+    class(_C_COLECAO)          :: self
 
-    class(C_lista_COLECAO), pointer :: item => null()
+    class(_C_COLECAO), pointer :: item => null()
 
     do while ( self.paraCada(item) )
 
@@ -469,7 +477,7 @@ contains
 
     end do
 
-    write(*,*) 'Lista mostrada.'
+    write(*,*) 'Lista de _C_EXTENDIDA mostrada.'
 
     write(*,*) ''
 
@@ -477,9 +485,9 @@ contains
 
   subroutine remover_nodo(self)
 
-    class(C_lista_COLECAO)             :: self
+    class(_C_COLECAO)             :: self
 
-    class(C_lista_COLECAO), pointer    :: ultimo, penultimo, ptr
+    class(_C_COLECAO), pointer    :: ultimo, penultimo, ptr
 
     call self.obterUltimo(ultimo)
 
@@ -511,9 +519,9 @@ contains
 
   subroutine remover_lista(self)
 
-    class(C_lista_COLECAO)              :: self
+    class(_C_COLECAO)              :: self
 
-    class(C_lista_COLECAO), pointer     :: first
+    class(_C_COLECAO), pointer     :: first
 
     call self.obterPrimeiro(first)
 
@@ -523,25 +531,25 @@ contains
 
     end do
 
-    write(*,*) 'Lista esvaziada.'
+    write(*,*) 'Lista de _C_EXTENDIDA esvaziada.'
 
     write(*,*) ''
 
   end subroutine remover_lista
 
-end module class_colecao
+end module _CLASS_COLECAO
 
 !----------------- Program -----------------------------
 
-program unitTests_lista_COLECAO
+program unitTests_lista_colecao
 
-  use class_colecao
+  use _CLASS_COLECAO
 
   implicit none
 
   integer                     :: i
 
-  type(C_lista_COLECAO)             :: lista
+  type(_C_COLECAO)       :: lista
 
   do i = 1, 15
 
@@ -559,4 +567,4 @@ program unitTests_lista_COLECAO
   
   pause
 
-end program unitTests_lista_COLECAO
+end program unitTests_lista_colecao
