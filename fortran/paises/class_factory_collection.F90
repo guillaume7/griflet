@@ -6,6 +6,10 @@
 #define _C_COLECAO C_factory
 #endif
 
+#ifndef _C_OBJECT
+#define _C_OBJECT C_object
+#endif _C_OBJECT
+
 module _CLASS_COLECAO
 
   !When using classes in fortran 2003, try considering that'%' and 'target' 
@@ -20,6 +24,30 @@ module _CLASS_COLECAO
 
   private
 
+  type, abstract, public :: _C_OBJECT
+
+    character(len=128)                  :: objType = "Object"
+
+  contains
+        
+    procedure(generic_getObjType), deferred, pass(self) :: getObjType
+
+  end type _C_OBJECT
+
+  abstract interface
+
+    function generic_getObjType(self) result(typeStr)
+
+      import :: _C_OBJECT
+
+      class(_C_OBJECT), intent(in)      :: self
+
+      character(len=128)                :: typeStr
+
+    end function generic_getObjType
+
+  end interface
+
   type, public ::  _C_COLECAO
 
     integer                         :: id = 1
@@ -27,6 +55,8 @@ module _CLASS_COLECAO
     class(_C_COLECAO), pointer       :: fundador => null()
 
     class(_C_COLECAO), pointer       :: seguinte => null()
+
+    class(_C_OBJECT), pointer        :: object => null()
 
   contains
 
@@ -420,7 +450,7 @@ contains
 
     if ( self.obterId() .eq. ptr.obterId() ) then
 
-      write(*,*) 'O item e o fundador da lista de _C_EXTENDIDA.'
+      write(*,*) 'O item e o fundador da lista de factory_collection.'
 
     else
 
@@ -434,7 +464,7 @@ contains
 
     if ( .not. self.temSeguinte() ) then
 
-      write(*,*) 'O item e o ultimo da lista de _C_EXTENDIDA.'
+      write(*,*) 'O item e o ultimo da lista de factory_collection.'
 
     else
 
@@ -458,7 +488,7 @@ contains
 
     end do
 
-    write(*,*) 'Lista de _C_EXTENDIDA mostrada.'
+    write(*,*) 'Lista de factory_collection mostrada.'
 
     write(*,*) ''
 
@@ -512,7 +542,7 @@ contains
 
     end do
 
-    write(*,*) 'Lista de _C_EXTENDIDA esvaziada.'
+    write(*,*) 'Lista de factory_collection esvaziada.'
 
     write(*,*) ''
 
