@@ -11,7 +11,7 @@ FILES = $(SOURCES) $(TEMPLATE) $(TARGETS)
 
 .PRECIOUS : class_colecao_paises.f90
 
-.PHONY: all clean
+.PHONY : all clean
 
 all : $(FILES)
 	@echo Done .... $(basename $^)
@@ -23,11 +23,11 @@ clean :
 		$(addsuffix .o,$(FILES))\
 		$(addsuffix .x,$(FILES))
 
-$(FILES) : $(addsuffix .x, $(FILES))
+#$(FILES) : $(addsuffix .x, $(FILES))
 
-%.x : %.o
-	ifort $< -o $@
-	cp $@ $(basename $@)
+#%.x : %.o
+#	ifort $< -o $@
+#	cp $@ $(basename $@)
 
 class_colecao_paises.x : class_colecao_paises.o class_paises.o
 	ifort $^ -o $@
