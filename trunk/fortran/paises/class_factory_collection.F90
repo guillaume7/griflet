@@ -1,5 +1,5 @@
 #ifndef _CLASS_COLECAO
-#define _CLASS_COLECAO class_factory_collection
+#define _CLASS_COLECAO class_collection
 #endif
 
 #ifndef _C_COLECAO
@@ -10,119 +10,140 @@
 #define _C_OBJECT C_object
 #endif _C_OBJECT
 
+#ifndef _OBJSTR_LENGTH
+#define _OBJSTR_LENGTH 128
+#endif _OBJSTR_LENGTH
+
 module _CLASS_COLECAO
 
-  !When using classes in fortran 2003, try considering that'%' and 'target' 
-
-  !are forbidden directives, except in 'get', 'set' and 'has' methods.
-
-  !Encapsulate in special methods uses of 'associated' and return logical
-
-  !result instead.
+  !Regra 1: When using classes in fortran 2003, try considering that 'target' 
+  !is a forbidden directive, except in 'get', 'set' and 'has' methods.
+  !Regra 2: Encapsular em procedures os usos de 'associated' com retorno
+  !de resultado verdadeiro/falso.
+  !Regra 3: Para cada campo num tipo, tem que haver um metodo "defineCampo"
+  !e um metodo "obterCampo".
 
   implicit none
 
   private
 
+ !----------------------type _C_OBJECT------------------------------!
+
+ ! Regra 1: Todos os tipos tem que ser tipos derivados de _C_OBJECT.
+ ! Regra 2: Cada variável derivada do tipo _C_OBJECT tem que ter 
+ ! o campo tipoObj inializado com o nome do tipo.
+
   type, abstract, public :: _C_OBJECT
 
-    character(len=128)                  :: objType = "Object"
+    character(len=_OBJSTR_LENGTH)       :: tipoObj = "_C_OBJECT"
 
   contains
-        
-    procedure(generic_getObjType), deferred, pass(self) :: getObjType
+ 
+    procedure, pass(self)               :: defineTipoObj !
+    procedure, pass(self)               :: obterTipoObj !
 
   end type _C_OBJECT
 
-  abstract interface
+!  abstract interface
+!    function generic_getObjType(self) result(typeStr)
+!      import :: _C_OBJECT
+!      class(_C_OBJECT), intent(in)      :: self
+!      character(len=_OBJSTR_LENGTH)     :: typeStr
+!    end function generic_getObjType
+!  end interface
 
-    function generic_getObjType(self) result(typeStr)
+  !----------------end type _C_OBJECT------------------------------!
 
-      import :: _C_OBJECT
+  !----------------type _C_COLECAO---------------------------------!
 
-      class(_C_OBJECT), intent(in)      :: self
+  type, public, extends(_C_OBJECT) ::  _C_COLECAO
 
-      character(len=128)                :: typeStr
-
-    end function generic_getObjType
-
-  end interface
-
-  type, public ::  _C_COLECAO
-
-    integer                         :: id = 1
-
-    class(_C_COLECAO), pointer       :: fundador => null()
-
-    class(_C_COLECAO), pointer       :: seguinte => null()
-
-    class(_C_OBJECT), pointer        :: object => null()
+    integer                          :: id = 0
+    character(len=_OBJSTR_LENGTH)    :: chave = "_"
+    class(_C_OBJECT),   pointer      :: valor => null()
+    class(_C_COLECAO),  pointer      :: fundador => null()
+    class(_C_COLECAO),  pointer      :: seguinte => null()
 
   contains
 
     !Constructors
-
-    procedure                       :: iniciar => iniciar_lista
-
-    !Sets ( '%' allowed for writing )
-
-    procedure                       :: defineId => defineId_nodo ! ( 'target' allowed )
-
-    procedure                       :: definePrimeiro => definePrimeiro_nodo
-
-    procedure                       :: defineSeguinte => defineSeguinte_nodo
-
-    !Gets ( '%' allowed for reading)
-
-    procedure                       :: obterProprio => obterProprio_nodo
-
-    procedure                       :: obterId => obterId_nodo
-
-    procedure                       :: obterPrimeiro => obterPrimeiro_nodo
-
-    procedure                       :: obterSeguinte => obterSeguinte_nodo
-    
-    !Has ( '%' allowed for checking association )
-
-    procedure                       :: temPrimeiro => temPrimeiro_nodo
-
-    procedure                       :: temSeguinte => temSeguinte_nodo
-
+    procedure                       :: iniciar
+    !Sets
+    procedure                       :: defineId
+    procedure                       :: defineChave !
+    procedure                       :: defineValor !
+    procedure                       :: definePrimeiro
+    procedure                       :: defineSeguinte
+    !Gets
+    procedure                       :: obterId
+    procedure                       :: obterChave !
+    procedure                       :: obterValor !
+    procedure                       :: obterPrimeiro
+    procedure                       :: obterSeguinte   
+    !Has
+    procedure                       :: temId
+    procedure                       :: temChave !
+    procedure                       :: temValor !
+    procedure                       :: temPrimeiro 
+    procedure                       :: temSeguinte 
     !_C_COLECAO methods
-
-    procedure                       :: adicionar => adicionar_nodo
-
-    procedure                       :: paraCada => paraCada_item
-
-    procedure                       :: obter => obter_nodo
-  
-    procedure                       :: obterAnterior => obterAnterior_nodo
-
-    procedure                       :: obterUltimo => obterUltimo_nodo
-
-    procedure                       :: mostrarId => mostrarId_nodo
-
-    procedure                       :: mostrar => mostrar_lista
-
-    procedure                       :: remover => remover_nodo
-
+    procedure                       :: obterProprio
+    procedure                       :: adicionar 
+    procedure                       :: paraCada 
+    procedure                       :: obter  
+    procedure                       :: obterAnterior
+    procedure                       :: obterUltimo 
+    procedure                       :: mostrarId 
+    procedure                       :: mostrar 
+    procedure                       :: remover
+    procedure                       :: tamanho !
     !Destructors
-
-    procedure                       :: finalizar => remover_lista
+    procedure                       :: finalizar
 
   end type _C_COLECAO
 
+  !-------------end type _C_COLECAO-------------------------------------!
+
 contains
+
+  !----------------type-bound procedures of type _C_OBJECT--------------!
+
+  function getObjType(self) result(str)
+
+    class(_C_OBJECT), intent(in)     :: self
+
+    character(len=_OBJSTR_LENGTH)    :: str
+
+    str = self%objType
+
+  end function getObjType
+
+  subroutine setObjType(self, str)
+
+    class(_C_OBJECT), intent(inout)  :: self
+
+    character(len=_OBJSTR_LENGTH)    :: str
+
+    self%objType = str
+
+  end subroutine setObjType
+
+  !----------------end of type-bound procedures of type _C_OBJECT-------!
+
+  !----------------type-bound procedures of type _C_COLECAO-------------!
 
   !Constructors
 
-  subroutine iniciar_lista(self, id)
+  subroutine iniciar(self, id)
 
-    class(_C_COLECAO)              :: self
+    class(_C_COLECAO)                   :: self
 
-    class(_C_COLECAO), pointer     :: ptr
+    class(_C_COLECAO), pointer          :: ptr
 
-    integer, optional             :: id
+    integer, optional                   :: id
+
+    character(len=_OBJSTR_LENGTH)       :: string = 'Colecao'
+
 
     if ( .not. self.temPrimeiro() ) then      
 
@@ -139,16 +160,18 @@ contains
       nullify( ptr )
 
       call self.defineSeguinte( ptr )
+    
+      call self%setObjType(string)
 
       write(*,*) 'Criado item numero ', self.obterId()
 
     end if
 
-  end subroutine iniciar_lista
+  end subroutine iniciar
 
   !Sets ( '%' allowed for writing )
 
-  subroutine defineId_nodo(self, id)
+  subroutine defineId(self, id)
 
     class(_C_COLECAO)              :: self
 
@@ -156,9 +179,9 @@ contains
 
     self%id = id
 
-  end subroutine defineId_nodo
+  end subroutine defineId
 
-  subroutine definePrimeiro_nodo(self, primeiro)
+  subroutine definePrimeiro(self, primeiro)
 
     class(_C_COLECAO)              :: self
 
@@ -166,9 +189,9 @@ contains
 
     self%fundador => primeiro
 
-  end subroutine definePrimeiro_nodo
+  end subroutine definePrimeiro
 
-  subroutine defineSeguinte_nodo(self, seguinte)
+  subroutine defineSeguinte(self, seguinte)
 
     class(_C_COLECAO)              :: self
 
@@ -176,7 +199,7 @@ contains
 
     self%seguinte => seguinte
 
-  end subroutine defineSeguinte_nodo
+  end subroutine defineSeguinte
 
   !Gets ( '%' allowed for reading)
   !It is safer to avoid getting pointers on function returns
@@ -184,7 +207,7 @@ contains
   !as arguments. To get pointers it's  best to use
   !subroutine calls.
 
-  subroutine obterProprio_nodo(self, proprio)
+  subroutine obterProprio(self, proprio)
 
     class(_C_COLECAO), target                    :: self
 
@@ -192,9 +215,9 @@ contains
 
     proprio => self
 
-  end subroutine obterProprio_nodo
+  end subroutine obterProprio
 
-  function obterId_nodo(self) result(id)
+  function obterId(self) result(id)
 
     class(_C_COLECAO)              :: self
 
@@ -202,9 +225,9 @@ contains
 
     id = self%id
 
-  end function obterId_nodo
+  end function obterId
 
-  subroutine obterPrimeiro_nodo(self, primeiro)
+  subroutine obterPrimeiro(self, primeiro)
 
     class(_C_COLECAO)                          :: self
 
@@ -212,9 +235,9 @@ contains
 
     primeiro => self%fundador
 
-  end subroutine obterPrimeiro_nodo
+  end subroutine obterPrimeiro
 
-  subroutine obterSeguinte_nodo(self, seguinte)
+  subroutine obterSeguinte(self, seguinte)
 
     class(_C_COLECAO)                        :: self
 
@@ -230,11 +253,11 @@ contains
 
     end if
 
-  end subroutine obterSeguinte_nodo
+  end subroutine obterSeguinte
 
   !Has methods
 
-  function temPrimeiro_nodo(self) result(tem)
+  function temPrimeiro(self) result(tem)
   
     class(_C_COLECAO)              :: self
 
@@ -250,9 +273,9 @@ contains
 
     end if
 
-  end function temPrimeiro_nodo
+  end function temPrimeiro
 
-  function temSeguinte_nodo(self) result(tem)
+  function temSeguinte(self) result(tem)
 
     class(_C_COLECAO)              :: self
 
@@ -268,11 +291,11 @@ contains
 
     end if
 
-  end function temSeguinte_nodo
+  end function temSeguinte
 
   !_C_COLECAO methods
   
-  subroutine adicionar_nodo(self)
+  subroutine adicionar(self)
 
     class(_C_COLECAO)              :: self
 
@@ -298,9 +321,9 @@ contains
 
     write(*,*) 'Criado item numero ', new.obterId()
 
-  end subroutine adicionar_nodo
+  end subroutine adicionar
 
-  function paraCada_item(self, item) result(keepup)
+  function paraCada(self, item) result(keepup)
 
     !Simulates 'for each <item> in <List> do ... end do'
 
@@ -356,9 +379,9 @@ contains
 
     end if
 
-  end function paraCada_item
+  end function paraCada
 
-  subroutine obter_nodo(self, id, nodo)
+  subroutine obter(self, id, nodo)
 
     class(_C_COLECAO)                            :: self
 
@@ -384,9 +407,9 @@ contains
 
     end do
 
-  end subroutine obter_nodo
+  end subroutine obter
 
-  subroutine obterAnterior_nodo(self, anterior)
+  subroutine obterAnterior(self, anterior)
 
     class(_C_COLECAO)                            :: self
 
@@ -422,9 +445,9 @@ contains
 
     endif
 
-  end subroutine obterAnterior_nodo
+  end subroutine obterAnterior
 
-  subroutine obterUltimo_nodo(self, ultimo)
+  subroutine obterUltimo(self, ultimo)
 
     class(_C_COLECAO)                            :: self
 
@@ -438,9 +461,9 @@ contains
 
     end do
 
-  end subroutine obterUltimo_nodo
+  end subroutine obterUltimo
 
-  subroutine mostrarId_nodo(self)
+  subroutine mostrarId(self)
 
     class(_C_COLECAO)          :: self
 
@@ -474,9 +497,9 @@ contains
 
     write(*,*) ''
 
-  end subroutine mostrarId_nodo
+  end subroutine mostrarId
 
-  subroutine mostrar_lista(self)
+  subroutine mostrar(self)
 
     class(_C_COLECAO)          :: self
 
@@ -492,9 +515,9 @@ contains
 
     write(*,*) ''
 
-  end subroutine mostrar_lista
+  end subroutine mostrar
 
-  subroutine remover_nodo(self)
+  subroutine remover(self)
 
     class(_C_COLECAO)             :: self
 
@@ -524,11 +547,11 @@ contains
 
     call penultimo.defineSeguinte( ptr )
 
-  end subroutine remover_nodo
+  end subroutine remover
 
   !Destructors
 
-  subroutine remover_lista(self)
+  subroutine finalizar(self)
 
     class(_C_COLECAO)              :: self
 
@@ -546,7 +569,9 @@ contains
 
     write(*,*) ''
 
-  end subroutine remover_lista
+  end subroutine finalizar
+
+  !-----------end type-bound procedures of type _C_COLECAO--------!
 
 end module _CLASS_COLECAO
 
