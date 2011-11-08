@@ -15,12 +15,6 @@ module class_collection
 
   private
 
-  public :: adicionar
-  interface adicionar
-    module procedure adicionar_nodo
-    module procedure adicionar_valor
-  end interface adicionar  
-
  !----------------------type C_objecto------------------------------!
 
  ! Regra 1: Todos os tipos tem que ser tipos derivados de C_objecto.
