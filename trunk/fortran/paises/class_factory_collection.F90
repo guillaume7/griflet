@@ -54,7 +54,7 @@ module class_collection
   contains
 
     !Constructors
-    procedure                       :: iniciar => iniciar_lista
+    procedure                       :: iniciar
     !Sets
     procedure                       :: defineId
     procedure                       :: defineChave
@@ -87,7 +87,7 @@ module class_collection
     procedure                       :: tamanho
     procedure                       :: criarnovo_nodo
     !Destructors
-    procedure                       :: finalizar => remover_lista
+    procedure                       :: finalizar
 
   end type C_colecao
 
@@ -123,7 +123,7 @@ contains
 
   !Constructors
 
-  subroutine iniciar_lista(self, id)
+  subroutine iniciar(self, id)
 
     class(C_colecao)                   :: self
     class(C_colecao), pointer          :: ptr
@@ -142,7 +142,7 @@ contains
       write(*,*) 'Criado item numero ', self%obterId()
     end if
 
-  end subroutine iniciar_lista
+  end subroutine iniciar
 
   !Sets
 
@@ -545,7 +545,7 @@ contains
 
   !Destructors
 
-  subroutine remover_lista(self)
+  subroutine finalizar(self)
 
     class(C_colecao)              :: self
     class(C_colecao), pointer     :: first
@@ -559,7 +559,7 @@ contains
     write(*,*) 'Lista de factory_collection esvaziada.'
     write(*,*) ''
 
-  end subroutine remover_lista
+  end subroutine finalizar
 
   function tamanho(self) result(tam)
 
