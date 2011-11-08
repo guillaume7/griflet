@@ -58,7 +58,7 @@ module class_collection
     !Gets
     procedure                       :: obterId
     procedure                       :: obterChave
-    procedure                       :: obterValor
+    procedure                       :: obterValor => obter_C_objecto ! abstract interface
     procedure                       :: obterPrimeiro
     procedure                       :: obterSeguinte   
     !Has
@@ -196,11 +196,11 @@ contains
     chave = self%chave
   end function obterChave
 
-  subroutine obterValor(self, valor)
+  subroutine obter_C_objecto(self, valor)
     class(C_colecao)                       :: self
     class(C_objecto), pointer, intent(out)  :: valor
     valor => self%valor
-  end subroutine obterValor
+  end subroutine obter_C_objecto
 
   subroutine obterPrimeiro(self, primeiro)
     class(C_colecao)                          :: self
