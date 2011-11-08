@@ -292,57 +292,37 @@ contains
   function paraCada_item(self, item) result(keepup)
 
     !Simulates 'for each <item> in <List> do ... end do'
-
     !usage: do while ( Lista.paraCada (item) )
-
     !usage: ...
-
     !usage: end do
 
     class(_C_COLECAO)                             :: self
-
     class(_C_COLECAO), pointer, intent(inout)     :: item
-
     class(_C_COLECAO), pointer                    :: ptr, itemZero => null()
-
     logical                                      :: keepup
 
     if ( .not. associated( item ) ) then
 
       allocate( itemZero )
-
       call itemZero.defineId(0)
-
       call self.obterPrimeiro(ptr)
-
       call itemZero.definePrimeiro( ptr )
-
       call self.obterProprio(ptr)
-
       call itemZero.defineSeguinte( ptr )
-
       item => itemZero
 
     end if
 
     if ( item.temSeguinte() ) then
-
       call item.obterSeguinte(item)
-  
       keepup = .true.
-
     else
-
-      nullify( item )
-      
+      nullify( item )    
       keepup = .false.
-
     end if
 
     if ( associated( itemZero ) ) then
-
       deallocate( itemZero )
-
     end if
 
   end function paraCada_item
