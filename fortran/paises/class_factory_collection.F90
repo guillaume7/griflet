@@ -1,6 +1,6 @@
 #ifndef _OBJSTR_LENGTH
 #define _OBJSTR_LENGTH 128
-#endif _OBJSTR_LENGTH
+#endif
 
 module class_collection
 
@@ -15,20 +15,27 @@ module class_collection
 
   private
 
+  public :: adicionar
+  interface adicionar
+    module procedure adicionar_nodo
+    module procedure adicionar_valor
+  end interface adicionar  
+
  !----------------------type C_objecto------------------------------!
 
  ! Regra 1: Todos os tipos tem que ser tipos derivados de C_objecto.
  ! Regra 2: Cada variável derivada do tipo C_objecto tem que ter 
  ! o campo tipoObj inicializado com o nome do tipo.
 
-  type, abstract, public :: C_objecto
+  type, public :: C_objecto
 
     character(len=_OBJSTR_LENGTH)       :: tipoObj = "C_objecto"
 
   contains
  
-    procedure, pass(self)               :: defineTipoObj
-    procedure, pass(self)               :: obterTipoObj
+    procedure                           :: defineTipoObj
+    procedure                           :: obterTipoObj
+    procedure                           :: mostrarTipoObj
 
   end type C_objecto
 
@@ -36,7 +43,7 @@ module class_collection
 
   !----------------type C_colecao---------------------------------!
 
-  type, public, abstract, extends(C_objecto)  ::  C_colecao
+  type, public, extends(C_objecto)  ::  C_colecao
 
     integer                        :: id = 0
     character(len=_OBJSTR_LENGTH)  :: chave = "_"
@@ -68,7 +75,8 @@ module class_collection
     procedure                       :: temSeguinte 
     !C_colecao methods
     procedure                       :: obterProprio
-    procedure                       :: adicionar_nodo 
+    procedure                       :: adicionar_nodo
+    procedure                       :: adicionar_valor
     procedure                       :: paraCada
     procedure                       :: obter  
     procedure                       :: obterAnterior
@@ -77,28 +85,13 @@ module class_collection
     procedure                       :: mostrar 
     procedure                       :: remover
     procedure                       :: tamanho
+    procedure                       :: criarnovo_nodo
     !Destructors
     procedure                       :: finalizar => remover_lista
 
   end type C_colecao
 
   !-------------end type C_colecao-------------------------------------!
-
-  !-------------type C_colecao_objecto--------------------------------!
-
-  type, public, extends(C_colecao)     :: C_colecao_objecto
-    contains
-  end type C_colecao_objecto
-
-  !-------------end type C_colecao_objecto----------------------------!
-
-  !-------------type C_colecao_colecao---------------------------------!
-
-  type, public, extends(C_colecao)     :: C_colecao_colecao
-    contains
-  end type C_colecao_colecao
-
-  !-------------end type C_colecao_colecao-----------------------------!
 
 contains
 
@@ -111,10 +104,18 @@ contains
   end function obterTipoObj
 
   subroutine defineTipoObj(self, str)
-    class(C_objecto), intent(inout)  :: self
+    class(C_objecto)                 :: self
     character(len=_OBJSTR_LENGTH)    :: str
     self%tipoObj = str
   end subroutine defineTipoObj
+
+  subroutine mostrarTipoObj(self)
+    class(C_objecto)                    :: self
+    character(len=_OBJSTR_LENGTH)       :: str
+    str = self%obterTipoObj()
+    write(*,*) 'Elemento do tipo ', trim( self%obterTipoObj() )
+    write(*,*) ' '
+  end subroutine mostrarTipoObj
 
   !----------------end of type-bound procedures of type C_objecto-------!
 
@@ -126,20 +127,19 @@ contains
 
     class(C_colecao)                   :: self
     class(C_colecao), pointer          :: ptr
-    integer, optional                   :: id
-    character(len=_OBJSTR_LENGTH)       :: string = 'Colecao'
+    integer, optional                  :: id
+    character(len=_OBJSTR_LENGTH)      :: string = 'C_colecao'
 
-
-    if ( .not. self.temPrimeiro() ) then      
+    if ( .not. self%temPrimeiro() ) then
       if ( present( id ) ) then
-        call self.defineId( id )
+        call self%defineId( id )
       end if
-      call self.obterProprio( ptr )
-      call self.definePrimeiro( ptr )
+      call self%obterProprio( ptr )
+      call self%definePrimeiro( ptr )
       nullify( ptr )
-      call self.defineSeguinte( ptr )   
-      call self%defineTipoObj(string)
-      write(*,*) 'Criado item numero ', self.obterId()
+      call self%defineSeguinte( ptr )
+      call self%defineTipoObj( string )
+      write(*,*) 'Criado item numero ', self%obterId()
     end if
 
   end subroutine iniciar_lista
@@ -147,19 +147,19 @@ contains
   !Sets
 
   subroutine defineId(self, id)
-    class(C_colecao)             :: self
+    class(C_colecao)              :: self
     integer                       :: id
     self%id = id
   end subroutine defineId
 
   subroutine defineChave(self, chave)
-    class(C_colecao)             :: self
+    class(C_colecao)              :: self
     character(len=_OBJSTR_LENGTH) :: chave
     self%chave = chave
   end subroutine defineChave
 
   subroutine defineValor(self,valor)
-    class(C_colecao)             :: self
+    class(C_colecao)              :: self
     class(C_objecto), pointer     :: valor
     self%valor => valor
   end subroutine definevalor
@@ -193,13 +193,13 @@ contains
 
   function obterId(self) result(id)
     class(C_colecao)              :: self
-    integer                        :: id
+    integer                       :: id
     id = self%id
   end function obterId
 
   function obterChave(self) result(chave)
     class(C_colecao)               :: self
-    character(len=_OBJSTR_LENGTH)   :: chave
+    character(len=_OBJSTR_LENGTH)  :: chave
     chave = self%chave
   end function obterChave
 
@@ -220,7 +220,7 @@ contains
     class(C_colecao)                        :: self
     class(C_colecao), pointer, intent(out)  :: seguinte
 
-    if ( self.temSeguinte() ) then
+    if ( self%temSeguinte() ) then
       seguinte => self%seguinte
     else
       nullify( seguinte )
@@ -285,7 +285,7 @@ contains
   function temSeguinte(self) result(tem)
 
     class(C_colecao)               :: self
-    logical                         :: tem
+    logical                        :: tem
 
     if ( associated( self%seguinte ) ) then     
       tem = .true.
@@ -296,55 +296,110 @@ contains
   end function temSeguinte
 
   !C_colecao methods
-  
-  subroutine adicionar_nodo(self)
+ 
+  subroutine adicionar_valor(self, valor)
 
-    class(C_colecao)              :: self
-    class(C_colecao), pointer     :: ultimo, new, primeiro
+    class(C_colecao)                                      :: self
+    class(C_objecto), pointer, intent(in)                 :: valor
+    class(C_colecao), pointer                             :: ptr => null()
 
-    if ( .not. self.temPrimeiro() ) then
-      call self.iniciar(1)
+    if ( associated( valor ) ) then
+      call self%adicionar_nodo()
+      call self%obterUltimo( ptr )
+      call ptr%defineValor( valor )
+    else     
+      write(*,*) 'Err: valor não está associado.'
+    endif
+
+  end subroutine adicionar_valor
+
+  subroutine adicionar_nodo(self, ptr)
+
+    class(C_colecao)                                      :: self
+    class(C_colecao), pointer, intent(in), optional       :: ptr
+    class(C_colecao), pointer                             :: ultimo, new, primeiro
+
+    if ( present(ptr) ) then
+
+      if ( associated(ptr) ) then
+        
+        if ( .not. ptr%temPrimeiro() ) then
+          call ptr%iniciar(1)
+        endif
+
+        if ( .not. self%temPrimeiro() ) then
+          call self%definePrimeiro(ptr)
+        else 
+          call self%obterUltimo(ultimo)
+          call ultimo%defineSeguinte(ptr)
+        endif
+
+      else
+        
+        write(*,*) 'Error: collection node points to null().'
+
+      endif
+
+    else
+
+      call self%criarnovo_nodo() 
+
+    endif
+    
+  end subroutine adicionar_nodo
+
+  subroutine criarnovo_nodo(self)
+
+    class(C_colecao)                                      :: self
+    class(C_colecao), pointer                             :: ultimo, new, primeiro
+
+    if ( .not. self%temPrimeiro() ) then
+
+      call self%iniciar(1)
+
+    else
+    
+      call self%obterPrimeiro(primeiro)
+      call self%obterUltimo(ultimo)
+    
+      allocate(new)
+    
+      call new%defineId( ultimo%obterId() + 1 )
+      call new%definePrimeiro( primeiro )
+      call ultimo%defineSeguinte( new )
+    
+      write(*,*) 'Criado item numero ', new%obterId()
+    
     end if
 
-    call self.obterPrimeiro(primeiro)
-    call self.obterUltimo(ultimo)
-
-    allocate(new)
-    
-    call new.defineId( ultimo.obterId() + 1 )
-    call new.definePrimeiro( primeiro )
-    call ultimo.defineSeguinte( new )
-
-    write(*,*) 'Criado item numero ', new.obterId()
-
-  end subroutine adicionar_nodo
+  end subroutine criarnovo_nodo
 
   function paraCada(self, node) result(keepup)
 
-    !Simulates 'for each <item> in <List> do ... end do'
-    !usage: do while ( Lista.paraCada (item) )
-    !usage: ...
+    !Simulates 'for each <item> in <List> do %%% end do'
+    !usage: do while ( Lista%paraCada (item) )
+    !usage: %%%
     !usage: end do
 
     class(C_colecao)                             :: self
     class(C_colecao), pointer, intent(inout)     :: node
-    logical                                       :: keepup    
-    class(C_colecao), pointer                    :: node, nodeZero => null()
+    logical                                      :: keepup    
+    class(C_colecao), pointer                    :: ptr, nodeZero => null()
 
-    if ( .not. associated( curr_node ) ) then
+    if ( .not. associated( node ) ) then
 
       allocate( nodeZero )
       call nodeZero%defineId(0)
-      call self%obterPrimeiro( node )
-      call nodeZero%definePrimeiro( node )
-      call node%obterSeguinte( node )
-      call nodeZero%defineSeguinte( node )
+      call self%obterPrimeiro( ptr )
+      call nodeZero%definePrimeiro( ptr )
+      call self%obterProprio( ptr )
+      call nodeZero%defineSeguinte( ptr )
       node => nodeZero
 
     end if
 
-    if ( node.temSeguinte() ) then
-      call node.obterSeguinte(node)
+    if ( node%temSeguinte() ) then
+      call node%obterSeguinte(node)
       keepup = .true.
     else
       nullify( node )      
@@ -363,14 +418,14 @@ contains
     integer                                      :: id    
     class(C_colecao), pointer, intent(out)      :: nodo
 
-    call self.obterPrimeiro(nodo)
+    call self%obterPrimeiro(nodo)
 
-    do while ( nodo.obterId() .ne. id )
-      if ( nodo.temSeguinte() ) then
-        call nodo.obterSeguinte(nodo)
+    do while ( nodo%obterId() .ne. id )
+      if ( nodo%temSeguinte() ) then
+        call nodo%obterSeguinte(nodo)
       else
-        id = nodo.obterId()
-        write(*,*) 'WARN 000: Nao se encontrou o nodo ', id, ' na colecao.'
+        id = nodo%obterId()
+        write(*,*) 'WARN 000: Nao se encontrou o nodo ', id, ' na colecao'
       end if
     end do
 
@@ -382,16 +437,16 @@ contains
     class(C_colecao), pointer, intent(out)      :: anterior   
     class(C_colecao), pointer                   :: seguinte
 
-    call self.obterPrimeiro(anterior)
+    call self%obterPrimeiro(anterior)
 
-    if ( self.obterId() .ne. anterior.obterId() ) then
+    if ( self%obterId() .ne. anterior%obterId() ) then
 
-      call anterior.obterSeguinte(seguinte)
+      call anterior%obterSeguinte(seguinte)
 
-      do while ( seguinte.obterId() .ne. self.obterId() )
-        if ( seguinte.temSeguinte() ) then
-          call anterior.obterSeguinte(anterior)
-          call seguinte.obterSeguinte(seguinte)
+      do while ( seguinte%obterId() .ne. self%obterId() )
+        if ( seguinte%temSeguinte() ) then
+          call anterior%obterSeguinte(anterior)
+          call seguinte%obterSeguinte(seguinte)
         else
           write(*,*) 'WARN 001: Nao foi encontrado o nodo anterior na colecao'
           write(*,*) 'C_colecao corrompida.'
@@ -405,13 +460,13 @@ contains
 
   subroutine obterUltimo(self, ultimo)
 
-    class(C_colecao)                            :: self
-    class(C_colecao), pointer, intent(out)      :: ultimo
+    class(C_colecao)                              :: self
+    class(C_colecao), pointer, intent(inout)      :: ultimo
 
-    call self.obterProprio(ultimo)
+    call self%obterPrimeiro(ultimo)
 
-    do while ( ultimo.temSeguinte() )
-      call ultimo.obterSeguinte(ultimo)
+    do while ( ultimo%temSeguinte() )
+      call ultimo%obterSeguinte(ultimo)
     end do
 
   end subroutine obterUltimo
@@ -421,22 +476,22 @@ contains
     class(C_colecao)          :: self
     class(C_colecao), pointer :: ptr
 
-    call self.obterAnterior(ptr)
+    call self%obterAnterior(ptr)
 
-    if ( self.obterId() .eq. ptr.obterId() ) then
+    if ( self%obterId() .eq. ptr%obterId() ) then
       write(*,*) 'O item e o fundador da lista de factory_collection.'
     else
-      write(*,*) 'O item anterior tem numero ', ptr.obterId()
+      write(*,*) 'O item anterior tem numero ', ptr%obterId()
     end if
 
-    write(*,*) 'O numero do item e o ', self.obterId()
+    write(*,*) 'O numero do item e o ', self%obterId()
 
-    call self.obterSeguinte(ptr)
+    call self%obterSeguinte(ptr)
 
-    if ( .not. self.temSeguinte() ) then
+    if ( .not. self%temSeguinte() ) then
       write(*,*) 'O item e o ultimo da lista de factory_collection.'
     else
-      write(*,*) 'O item seguinte tem numero', ptr.obterId()
+      write(*,*) 'O item seguinte tem numero', ptr%obterId()
     end if
 
     write(*,*) ''
@@ -447,11 +502,17 @@ contains
 
     class(C_colecao)          :: self
     class(C_colecao), pointer :: item => null()
+    class(C_objecto), pointer :: valor => null()
 
-    do while ( self.paraCada(item) )
-      call item.mostrarId()
+    do while ( self%paraCada(item) )
+      call item%mostrarId()
+      if ( item%temValor() ) then
+        call item%obterValor(valor)
+        call valor%mostrarTipoObj()
+      end if
     end do
 
+    write(*,*) 'A lista contem ', self%tamanho(), ' elementos' 
     write(*,*) 'Lista de factory_collection mostrada.'
     write(*,*) ''
 
@@ -462,20 +523,23 @@ contains
     class(C_colecao)             :: self
     class(C_colecao), pointer    :: ultimo, penultimo, ptr
 
-    call self.obterUltimo(ultimo)
-    call ultimo.obterAnterior(penultimo)
+    call self%obterUltimo(ultimo)
+    call ultimo%obterAnterior(penultimo)
 
-    if ( ultimo.obterId() .eq. penultimo.obterId() ) then
+    if ( ultimo%obterId() .eq. penultimo%obterId() ) then
       write(*,*) 'WARN: A lista contem apenas o seu elemento fundador.'
       write(*,*) 'Não se remove o elemento fundador da lista.'
       write(*,*) 'O elemento fundador so pode ser removido externamente.'
     else
-      write(*,*) 'Removido item numero ', ultimo.obterId()
-      deallocate(ultimo)
+      if ( ultimo%temValor() ) then
+        deallocate( ultimo%valor )
+      end if
+      write(*,*) 'Removido item numero ', ultimo%obterId()
+      deallocate( ultimo )
     endif
 
     nullify( ptr )
-    call penultimo.defineSeguinte( ptr )
+    call penultimo%defineSeguinte( ptr )
 
   end subroutine remover
 
@@ -486,10 +550,10 @@ contains
     class(C_colecao)              :: self
     class(C_colecao), pointer     :: first
 
-    call self.obterPrimeiro(first)
+    call self%obterPrimeiro(first)
 
-    do while ( first.temSeguinte() )
-      call first.remover()
+    do while ( first%temSeguinte() )
+      call first%remover()
     end do
 
     write(*,*) 'Lista de factory_collection esvaziada.'
@@ -501,44 +565,21 @@ contains
 
     class(C_colecao)             :: self
     class(C_colecao), pointer    :: item => null()
-    integer                       :: tam
+    integer                      :: tam
 
     tam = 0
 
-    do while ( self%paraCada(item) )    
-      tam = tam + 1
+    do while ( self%paraCada(item) )
+      tam = tam + 1      
     enddo
 
   end function tamanho
 
   !-----------end type-bound procedures of type C_colecao----------!
 
-  !-----------type-bound procedures of type C_colecao_objecto-----!
-
-  function paraCada_objecto(self, ptr, item) result(keepup)
-
-    class(C_colecao)                             :: self
-    class(C_colecao), pointer, intent(inout)     :: ptr
-    class(C_objecto), pointer, intent(inout)     :: item
-    logical                                       :: keepup
-
-    call self%obterValor(item)
-
-    if ( self%temSeguinte() ) then
-      self%obterSeguinte(ptr)
-      keepup = .true.
-    else
-      self%obterPrimeiro(ptr)
-      keepup = .false.
-    endif
-
-  end function paraCada_objecto
-
-  !-----------end type-bound procedures of type C_colecao_objecto--!
-
 end module class_collection
 
-!----------------- Program -----------------------------
+!------------------ Program -----------------------------!
 
 program unitTests_lista_colecao
 
@@ -546,18 +587,22 @@ program unitTests_lista_colecao
 
   implicit none
 
-  integer                     :: i
+  integer                       :: i 
+  type(C_colecao)               :: lista
+  class(C_objecto), pointer     :: item => null()
 
-  type(C_colecao)       :: lista
-
-  do i = 1, 15
-    call lista%adicionar_nodo()
+  do i = 1, 4
+    allocate( item )
+    call lista%adicionar_valor( item )
+    nullify( item )
   end do
 
   write(*,*) ''
+
   call lista%mostrar()
   call lista%finalizar()
-  call lista%mostrar()  
+  call lista%mostrar()
+
   pause
 
 end program unitTests_lista_colecao
