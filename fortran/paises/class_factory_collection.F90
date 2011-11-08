@@ -108,7 +108,6 @@ contains
     character(len=_OBJSTR_LENGTH)       :: str
     str = self%obterTipoObj()
     write(*,*) 'Elemento do tipo ', trim( self%obterTipoObj() )
-    write(*,*) ' '
   end subroutine mostrarTipoObj
 
   !----------------end of type-bound procedures of type C_objecto-------!
@@ -301,6 +300,7 @@ contains
       call self%adicionar_nodo()
       call self%obterUltimo( ptr )
       call ptr%defineValor( valor )
+      write(*,*) 'de tipo ', trim( valor%obterTipoObj() )
     else     
       write(*,*) 'Err: valor não está associado.'
     endif
@@ -472,6 +472,7 @@ contains
 
     call self%obterAnterior(ptr)
 
+    write(*,*) ' '
     if ( self%obterId() .eq. ptr%obterId() ) then
       write(*,*) 'O item e o fundador da lista de factory_collection.'
     else
@@ -488,24 +489,21 @@ contains
       write(*,*) 'O item seguinte tem numero', ptr%obterId()
     end if
 
-    write(*,*) ''
-
   end subroutine mostrarId
 
   subroutine mostrar(self)
 
     class(C_colecao)          :: self
     class(C_colecao), pointer :: item => null()
-    class(C_objecto), pointer :: valor => null()
 
     do while ( self%paraCada(item) )
       call item%mostrarId()
       if ( item%temValor() ) then
-        call item%obterValor(valor)
-        call valor%mostrarTipoObj()
+        call item%valor%mostrarTipoObj()
       end if
     end do
 
+    write(*,*) ''
     write(*,*) 'A lista contem ', self%tamanho(), ' elementos' 
     write(*,*) 'Lista de factory_collection mostrada.'
     write(*,*) ''
@@ -590,8 +588,6 @@ program unitTests_lista_colecao
     call lista%adicionar_valor( item )
     nullify( item )
   end do
-
-  write(*,*) ''
 
   call lista%mostrar()
   call lista%finalizar()
