@@ -8,7 +8,7 @@
 #endif
 
 ! TODO: 
-! 1 - Opção de Chave
+! 1 - Opção de Chave * Done (define, search)
 ! 2 - Extender C_Colecao para C_Colecao_objecto e para C_Colecao_colecao.
 !     Criar interfaces para os metodos associados ao Valor.
 ! 3 - Fazer programa com arrays e com directivas openmp,
@@ -66,6 +66,8 @@ module class_collection
 
     !Constructors
     procedure                       :: iniciar
+    !Destructors
+    procedure                       :: finalizar
     !Sets
     procedure                       :: defineId
     procedure                       :: defineChave
@@ -83,19 +85,24 @@ module class_collection
     procedure                       :: temSeguinte
     !C_Colecao methods
     procedure                       :: obterProprio
-    procedure			    :: adicionar_nodo
+    procedure			    :: adicionarNodo
     procedure                       :: paraCada
     procedure                       :: obter
     procedure                       :: obterAnterior
     procedure                       :: obterUltimo
     procedure                       :: mostrarId
+    procedure                       :: mostrarNodo
     procedure                       :: mostrar
     procedure                       :: remover
     procedure                       :: tamanho
     procedure                       :: redefineId
     procedure                       :: redefinePrimeiro
-    !Destructors
-    procedure                       :: finalizar
+    procedure 			    :: existeChave
+    procedure                       :: mostrarChave
+    procedure                       :: procuraChave
+    procedure			    :: adicionar !deferred, abstract interface
+    procedure, nopass               :: alocarNodo  !deferred, abstract interface, nopass
+    procedure, nopass               :: desalocarNodo  !deferred, abstract interface, nopass
 
     !Regra: Um metodo de "define", de "obter" e de "tem"
     !por cada tipo de colecao.
@@ -166,6 +173,24 @@ contains
 
   end subroutine iniciar
 
+  !Destructors
+
+  subroutine finalizar(self)
+
+    class(C_Colecao)              :: self
+    class(C_Colecao), pointer     :: first
+
+    call self%obterPrimeiro(first)
+
+    do while ( first%temSeguinte() )
+      call first%remover()
+    end do
+
+    write(*,*) 'Lista de factory_collection esvaziada.'
+    write(*,*) ''
+
+  end subroutine finalizar
+
   !Sets
 
   subroutine defineId(self, id)
@@ -177,7 +202,11 @@ contains
   subroutine defineChave(self, chave)
     class(C_Colecao)              :: self
     character(len=_OBJSTR_LENGTH) :: chave
-    self%chave = chave
+    if ( .not. self%existeChave(chave) ) then
+      self%chave = trim(chave)
+    else
+      write(*,*) 'Error: defineChave - Chave already exists!'
+    end if
   end subroutine defineChave
 
   subroutine definePrimeiro(self, primeiro)
@@ -294,15 +323,16 @@ contains
 
   !C_Colecao methods
 
-  subroutine adicionar_nodo(self, ptr)
+  subroutine adicionarNodo(self, nodo, chave)
 
     class(C_Colecao)                                      :: self
-    class(C_Colecao), pointer, intent(inout), optional    :: ptr
-    class(C_Colecao), pointer                             :: ultimo, new, primeiro
+    class(C_Colecao), pointer, intent(inout), optional    :: nodo
+    character(len=_OBJSTR_LENGTH), optional		  :: chave
+    class(C_Colecao), pointer                             :: ultimo, new => null(), primeiro
 
-    if ( present(ptr) ) then
+    if ( present( nodo ) ) then
 
-      if ( associated(ptr) ) then
+      if ( associated( nodo ) ) then
 
         !'ptr' pode ser um simples nodo de colecao
         ! mas tambem pode representar uma colecao
@@ -310,15 +340,15 @@ contains
         ! É sempre necessário redefinir o fundador
         ! e redefineIdr os ids.
 
-        if ( .not. ptr%temPrimeiro() ) then
-          call ptr%iniciar( 1 )
+        if ( .not. nodo%temPrimeiro() ) then
+          call nodo%iniciar( 1 )
         endif
 
         if ( .not. self%temPrimeiro() ) then
-          call self%definePrimeiro(ptr)
+          call self%definePrimeiro( nodo )
         else 
-          call self%obterUltimo(ultimo)
-          call ultimo%defineSeguinte(ptr)
+          call self%obterUltimo( ultimo )
+          call ultimo%defineSeguinte( nodo )
           call self%obterPrimeiro( primeiro )
           call self%redefinePrimeiro( primeiro )
           call self%redefineId()
@@ -326,16 +356,20 @@ contains
         
         call self%obterUltimo( ultimo )
         
-        if ( ptr%obterId() .ne. ultimo%obterId() ) then
-          write(*,*) 'Inserido item numero ', ptr%obterId() &
+        if ( nodo%obterId() .ne. ultimo%obterId() ) then
+          write(*,*) 'Inserido item numero ', nodo%obterId() &
                    , ' até ', ultimo%obterId()
         else
-          write(*,*) 'Inserido item numero ', ptr%obterId()
+          write(*,*) 'Inserido item numero ', nodo%obterId()
         end if
+
+        if ( present( chave ) ) then
+	  call nodo%defineChave(chave)
+	end if
 
       else
 
-         write(*,*) 'Error in adicionar_nodo: Passed argument points to null().'
+        write(*,*) 'Error in adicionarNodo: Passed argument points to null().'
 
       endif
 
@@ -348,18 +382,21 @@ contains
       else   
 
         call self%obterPrimeiro(primeiro)
-        call self%obterUltimo(ultimo)    
-        allocate(new)    
+        call self%obterUltimo(ultimo)
+        call self%alocarNodo( new )
         call new%defineId( ultimo%obterId() + 1 )
         call new%definePrimeiro( primeiro )
-        call ultimo%defineSeguinte( new )    
+        call ultimo%defineSeguinte( new )
+        if ( present( chave ) ) then
+	  call new%defineChave(chave)
+	end if
         write(*,*) 'Criado item numero ', new%obterId()
     
       end if
 
     end if
 
-  end subroutine adicionar_nodo
+  end subroutine adicionarNodo
 
   function paraCada(self, node) result(keepup)
 
@@ -375,7 +412,7 @@ contains
 
     if ( .not. associated( node ) ) then
 
-      allocate( nodeZero )
+      call self%alocarNodo( nodeZero )
       call nodeZero%defineId(0)
       call self%obterPrimeiro( ptr )
       call nodeZero%definePrimeiro( ptr )
@@ -394,7 +431,7 @@ contains
     end if
 
     if ( associated( nodeZero ) ) then
-      deallocate( nodeZero )
+      call self%desalocarNodo( nodeZero ) 
     end if
 
   end function paraCada
@@ -402,7 +439,7 @@ contains
   subroutine obter(self, id, nodo)
 
     class(C_Colecao)                            :: self
-    integer                                      :: id    
+    integer                                     :: id    
     class(C_Colecao), pointer, intent(out)      :: nodo
 
     call self%obterPrimeiro(nodo)
@@ -484,16 +521,34 @@ contains
 
   end subroutine mostrarId
 
+  subroutine mostrarNodo(self)
+
+    class(C_Colecao)          :: self
+
+    call self%mostrarId()
+    if ( self%temChave() ) then
+      call self%mostrarChave()
+    end if
+#ifdef _OBJECTO_
+    if ( self%temObjecto() ) then
+      call self%objecto%mostrarTipoObj()
+    end if
+#endif
+#ifdef _COLECAO_
+    if ( self%temColecao() ) then
+      call self%Colecao%mostrarTipoObj()
+    end if
+#endif
+
+  end subroutine mostrarNodo
+
   subroutine mostrar(self)
 
     class(C_Colecao)          :: self
     class(C_Colecao), pointer :: item => null()
 
     do while ( self%paraCada(item) )
-      call item%mostrarId()
-      if ( item%temObjecto() ) then
-        call item%objecto%mostrarTipoObj()
-      end if
+      call item%mostrarNodo()
     end do
 
     write(*,*) ''
@@ -516,35 +571,24 @@ contains
       write(*,*) 'Não se remove o elemento fundador da lista.'
       write(*,*) 'O elemento fundador so pode ser removido externamente.'
     else
+#ifdef _OBJECTO_
       if ( ultimo%temObjecto() ) then
-        deallocate( ultimo%objecto )
+        deallocate( ultimo%Objecto )
       end if
+#endif
+#ifdef _COLECAO_
+      if ( ultimo%temColecao() ) then
+        deallocate( ultimo%Colecao )
+      end if
+#endif
       write(*,*) 'Removido item numero ', ultimo%obterId()
-      deallocate( ultimo )
+      call self%desalocarNodo( ultimo )
     endif
 
     nullify( ptr )
     call penultimo%defineSeguinte( ptr )
 
   end subroutine remover
-
-  !Destructors
-
-  subroutine finalizar(self)
-
-    class(C_Colecao)              :: self
-    class(C_Colecao), pointer     :: first
-
-    call self%obterPrimeiro(first)
-
-    do while ( first%temSeguinte() )
-      call first%remover()
-    end do
-
-    write(*,*) 'Lista de factory_collection esvaziada.'
-    write(*,*) ''
-
-  end subroutine finalizar
 
   function tamanho(self) result(tam)
 
@@ -590,6 +634,95 @@ contains
 
   end subroutine redefinePrimeiro
 
+  function existeChave(self, chave) result(existe)
+
+    class(C_Colecao)				:: self
+    character(len=_OBJSTR_LENGTH),intent(in)	:: chave
+    logical					:: existe
+    class(C_Colecao), pointer			:: item => null()
+
+    existe = .false.
+    do while ( self%paraCada( item ) )
+      if ( trim(item%chave) .eq. trim(chave) ) then
+        existe = .true.
+      end if
+    end do
+
+  end function existeChave
+
+  subroutine mostrarChave(self)
+    class(C_Colecao)				:: self
+    write(*,*) 'a chave é "', trim(self%obterChave()),'".'
+  end subroutine mostrarChave
+
+  subroutine procuraChave(self, chave, resultado)
+
+    class(C_Colecao)				:: self
+    character(len=_OBJSTR_LENGTH), intent(in)	:: chave
+    class(C_Colecao), pointer, intent(inout)	:: resultado
+    class(C_Colecao), pointer			:: item => null()
+    
+    nullify( resultado )
+    do while ( self%paraCada( item ) )
+      if ( trim(item%obterChave()) .eq. trim(chave) ) then
+        call item%obterProprio( resultado )
+        write(*,*) 'Found key "', trim(chave), '" in element with id', item%obterId()
+        write(*,*) ' '
+      end if
+    end do
+
+  end subroutine procuraChave
+
+  !-------------------------Extensão C_Colecao ----------------------!
+
+  subroutine adicionar(self, chave)
+
+    class(C_Colecao)                                      :: self
+    character(len=_OBJSTR_LENGTH), optional		  :: chave
+    class(C_Colecao), pointer				  :: nodo => null()
+#ifdef _OBJECTO_
+    class(C_Objecto), pointer				  :: Objecto => null()
+#endif
+#ifdef _COLECAO_
+    class(C_Colecao), pointer				  :: Colecao => null()
+#endif
+
+    if ( present( chave ) ) then
+      call self%adicionarNodo( chave = chave )
+    else
+      call self%adicionarNodo()
+    end if
+
+    call self%obterUltimo( nodo )
+
+#ifdef _OBJECTO_
+    allocate( Objecto )
+    call nodo%defineObjecto( Objecto )
+    nullify( Objecto )
+#endif
+#ifdef _COLECAO_
+    allocate( Colecao )
+    call nodo%defineColecao( Colecao )
+    nullify( Colecao )
+#endif
+
+  end subroutine adicionar
+
+  subroutine alocarNodo( new ) !nopass
+    class(C_Colecao), pointer, intent(inout)	:: new
+    allocate( new )
+  end subroutine alocarNodo
+
+  subroutine desalocarNodo( ptr ) !nopass
+    class(C_Colecao), pointer, intent(inout)	:: ptr
+    if ( associated( ptr ) ) then
+      deallocate( ptr )
+      nullify( ptr )
+    else
+      write(*,*) 'Warning: desalocarNodo - argument already points to null.'
+    endif
+  end subroutine desalocarNodo
+
 #ifdef _OBJECTO_
 #undef  _VALOR_
 #define _VALOR_ _OBJECTO_
@@ -618,16 +751,26 @@ program unitTests_lista_colecao
   type(C_Colecao)               :: lista
   class(C_Colecao), pointer     :: nodo => null()
   class(C_Objecto), pointer     :: item => null()
+  character(len=_OBJSTR_LENGTH) :: achave = 'Olá'
 
-  do i = 1, 4
-    call lista%adicionar_nodo()
+  do i = 1, 2
+    call lista%adicionarNodo()
     call lista%obterUltimo( nodo )
     allocate( item )
     call nodo%defineObjecto( item )
     nullify( item )
+    nullify( nodo )
+  end do
+
+  call lista%adicionar( chave = achave )
+
+  do i = 1, 2
+    call lista%adicionar()
   end do
 
   call lista%mostrar()
+  call lista%procuraChave( achave, nodo )
+  call nodo%mostrarNodo()
   call lista%finalizar()
   call lista%mostrar()
 
