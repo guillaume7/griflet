@@ -9,6 +9,7 @@
 
 ! TODO: 
 ! 1 - Opção de Chave * Done (define, search)
+! 2a- Mudar o tamanho fixo das chaves de 128 caracteres para um tamanho indefinido...
 ! 2 - Extender C_Colecao para C_Colecao_objecto e para C_Colecao_colecao.
 !     Criar interfaces para os metodos associados ao Valor.
 ! 3 - Fazer programa com arrays e com directivas openmp,
@@ -87,7 +88,7 @@ module class_collection
     procedure                       :: obterProprio
     procedure			    :: adicionarNodo
     procedure                       :: paraCada
-    procedure                       :: obter
+    procedure                       :: procuraId
     procedure                       :: obterAnterior
     procedure                       :: obterUltimo
     procedure                       :: mostrarId
@@ -436,24 +437,27 @@ contains
 
   end function paraCada
 
-  subroutine obter(self, id, nodo)
-
+  function procuraId(self, id, nodo) result(found)
     class(C_Colecao)                            :: self
-    integer                                     :: id    
+    integer                                     :: id
     class(C_Colecao), pointer, intent(out)      :: nodo
-
-    call self%obterPrimeiro(nodo)
-
-    do while ( nodo%obterId() .ne. id )
-      if ( nodo%temSeguinte() ) then
-        call nodo%obterSeguinte(nodo)
-      else
-        id = nodo%obterId()
-        write(*,*) 'WARN 000: Nao se encontrou o nodo ', id, ' na colecao'
-      end if
-    end do
-
-  end subroutine obter
+    logical					:: found
+    class(C_Colecao), pointer		        :: item => null()
+    found = .false.
+    if ( id .le. self%tamanho() ) then
+      do while ( self%paraCada(item) )
+        if ( item%obterId() .eq. id ) then
+	  found = .true.
+          call item%obterProprio( nodo )
+	  write(*,*) ' '
+	  write(*,*) 'Encontrado o elemento da colecao com id ', id
+        end if
+      end do
+    else
+      write(*,*) 'O id', id,'que procura é superior ao tamanho da coleção', self%tamanho()
+      nullify( nodo )
+    end if
+  end function procuraId
 
   subroutine obterAnterior(self, anterior)
 
@@ -655,23 +659,26 @@ contains
     write(*,*) 'a chave é "', trim(self%obterChave()),'".'
   end subroutine mostrarChave
 
-  subroutine procuraChave(self, chave, resultado)
+  function procuraChave(self, chave, resultado) result(found)
 
     class(C_Colecao)				:: self
     character(len=_OBJSTR_LENGTH), intent(in)	:: chave
     class(C_Colecao), pointer, intent(inout)	:: resultado
+    logical					:: found
     class(C_Colecao), pointer			:: item => null()
     
+    found = .false.
     nullify( resultado )
     do while ( self%paraCada( item ) )
       if ( trim(item%obterChave()) .eq. trim(chave) ) then
+	found = .true.
         call item%obterProprio( resultado )
-        write(*,*) 'Found key "', trim(chave), '" in element with id', item%obterId()
         write(*,*) ' '
+        write(*,*) 'Found key "', trim(chave), '" in element with id', item%obterId()
       end if
     end do
 
-  end subroutine procuraChave
+  end function procuraChave
 
   !-------------------------Extensão C_Colecao ----------------------!
 
@@ -769,9 +776,19 @@ program unitTests_lista_colecao
   end do
 
   call lista%mostrar()
-  call lista%procuraChave( achave, nodo )
-  call nodo%mostrarNodo()
+
+  if ( lista%procuraChave( achave, nodo ) ) then
+    call nodo%mostrarNodo()
+    nullify( nodo )  
+  end if
+
+  if ( lista%procuraId( 2, nodo ) ) then
+    call nodo%mostrarNodo()
+    nullify( nodo )
+  end if
+
   call lista%finalizar()
+
   call lista%mostrar()
 
   pause
