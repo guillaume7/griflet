@@ -10,6 +10,8 @@
 ! TODO: 
 ! 1 - Opção de Chave * Done (define, search)
 ! 2a- Mudar o tamanho fixo das chaves de 128 caracteres para um tamanho indefinido...
+!   - Feito : criei a função pública str() que converte strings de qq tamanho
+!     em strings com o tamanho certo.
 ! 2 - Extender C_Colecao para C_Colecao_objecto e para C_Colecao_colecao.
 !     Criar interfaces para os metodos associados ao Valor.
 ! 3 - Fazer programa com arrays e com directivas openmp,
@@ -123,6 +125,8 @@ module class_collection
   end type C_Colecao
 
   !-------------end type C_Colecao-------------------------------------!
+
+  public                :: str
 
 contains
 
@@ -744,6 +748,12 @@ contains
 
   !-----------end type-bound procedures type C_Colecao----------!
 
+  function str(inStr) result(sizedStr)
+    character(len=*), intent(in)        :: inStr
+    character(len=_OBJSTR_LENGTH)       :: sizedStr
+    sizedStr = trim(inStr)
+  end function str
+
 end module class_collection
 
 !------------------ Program -----------------------------!
@@ -758,7 +768,6 @@ program unitTests_lista_colecao
   type(C_Colecao)               :: lista
   class(C_Colecao), pointer     :: nodo => null()
   class(C_Objecto), pointer     :: item => null()
-  character(len=_OBJSTR_LENGTH) :: achave = 'Olá'
 
   do i = 1, 2
     call lista%adicionarNodo()
@@ -769,7 +778,7 @@ program unitTests_lista_colecao
     nullify( nodo )
   end do
 
-  call lista%adicionar( chave = achave )
+  call lista%adicionar( chave = str('Olá') )
 
   do i = 1, 2
     call lista%adicionar()
@@ -777,7 +786,7 @@ program unitTests_lista_colecao
 
   call lista%mostrar()
 
-  if ( lista%procuraChave( achave, nodo ) ) then
+  if ( lista%procuraChave( str('Olá'), nodo ) ) then
     call nodo%mostrarNodo()
     nullify( nodo )  
   end if
