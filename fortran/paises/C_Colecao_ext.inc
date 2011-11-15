@@ -4,6 +4,8 @@
 
 #ifndef _PRESCAN_
 #define _PRESCAN_
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
 #define AFTERALN(x) alocarNodoDe ## x
 #define AFTERDEF(x) define ## x
 #define AFTEROBT(x) obter ## x
