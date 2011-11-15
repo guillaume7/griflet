@@ -3,6 +3,7 @@
   subroutine ALNODO(_VALOR_) ( new ) !nopass
     class(C_Colecao), pointer, intent(inout)	:: new
     allocate( COLVALOR(_VALOR_) :: new )
+    call new%defineTipoObj( Str('C_Colecao') )
   end subroutine ALNODO(_VALOR_)
 
   subroutine DEFVALOR(_VALOR_) (self, valor)
@@ -49,6 +50,7 @@
   subroutine ALOVALOR(_VALOR_) (self)
     class(COLVALOR(_VALOR_))                                      :: self
     allocate( CVALOR(_VALOR_) :: self%valor )
+    call self%valor%defineTipoObj( Str('C_Objecto') )
   end subroutine ALOVALOR(_VALOR_)
 
   subroutine DESVALOR(_VALOR_) (self)

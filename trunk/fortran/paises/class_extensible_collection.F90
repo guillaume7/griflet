@@ -201,6 +201,14 @@ contains
 
   !----------------end of type-bound procedures of type C_Objecto-------!
 
+  !---------------type-bound procedures of type C_colecao_Objecto-------!
+
+#undef _VALOR_
+#define _VALOR_ Objecto
+#include "C_Colecao_contains_ext.inc"
+
+  !--------------end type-bound procedures type C_Colecao_Objecto------!
+
   !----------------type-bound procedures of type C_Colecao-------------!
 
   !Constructors
@@ -239,7 +247,7 @@ contains
       call first%remover()
     end do
 
-    write(*,*) 'Lista de factory_collection esvaziada.'
+    write(*,*) 'Lista esvaziada.'
     write(*,*) ''
 
   end subroutine finalizar
@@ -560,7 +568,7 @@ contains
 
     write(*,*) ' '
     if ( self%obterId() .eq. ptr%obterId() ) then
-      write(*,*) 'O item e o fundador da lista de factory_collection.'
+      write(*,*) 'O item e o fundador da lista da colecao.'
     else
       write(*,*) 'O item anterior tem numero ', ptr%obterId()
     end if
@@ -570,7 +578,7 @@ contains
     call self%obterSeguinte(ptr)
 
     if ( .not. self%temSeguinte() ) then
-      write(*,*) 'O item e o ultimo da lista de factory_collection.'
+      write(*,*) 'O item e o ultimo da lista.'
     else
       write(*,*) 'O item seguinte tem numero', ptr%obterId()
     end if
@@ -602,7 +610,7 @@ contains
 
     write(*,*) ''
     write(*,*) 'A lista contem ', self%tamanho(), ' elementos' 
-    write(*,*) 'Lista de factory_collection mostrada.'
+    write(*,*) 'Lista mostrada.'
     write(*,*) ''
 
   end subroutine mostrar
@@ -731,7 +739,6 @@ contains
     end if
 
     call self%obterUltimo( nodo )
-
     call nodo%alocarValor( )
 
   end subroutine adicionar
@@ -747,14 +754,6 @@ contains
   end subroutine desalocarNodo
 
   !-----------end type-bound procedures type C_Colecao----------!
-
-  !-------type-bound procedures of type C_colecao_Objecto-------!
-
-#undef _VALOR_
-#define _VALOR_ Objecto
-#include "C_Colecao_contains_ext.inc"
-
-  !-------end type-bound procedures type C_Colecao_Objecto------!
 
   function str(inStr) result(sizedStr)
     character(len=*), intent(in)        :: inStr
@@ -778,27 +777,39 @@ program unitTests_lista_colecao
   integer                       	:: i 
   type(C_Colecao_Objecto)       	:: lista
   class(C_Colecao), pointer     	:: nodo => null()
+  class(C_Objecto), pointer		:: objecto => null()
 
-  call lista%adicionar( chave = str('Olá') )
-
+  !Cria e adiciona 2 elementos que guarda na colecao
   do i = 1, 2
     call lista%adicionar()
   end do
 
-  call lista%mostrar()
+  !Cria e adiciona 1 elemento com uma chave associada.
+  call lista%adicionar( chave = str('Olá') )
 
+  !Procura o elemento da lista contendo aquela chave
+  !e mostra
   if ( lista%procuraChave( str('Olá'), nodo ) ) then
     call nodo%mostrarNodo()
     nullify( nodo )
   end if
 
+  !Procura o elemento número 2 da lista,
+  !extrai e mostra
   if ( lista%procuraId( 2, nodo ) ) then
-    call nodo%mostrarNodo()
+    call nodo%obterValor( objecto )
+    call objecto%MostrarTipoObj()
     nullify( nodo )
   end if
 
+  !Mostra toda a colecao
+  call lista%mostrar()
+ 
+  !Remove todos os itens da colecao
+  !(excepto o proprio item "lista")
   call lista%finalizar()
 
+  !Mostra o item "lista"
   call lista%mostrar()
 
   pause
