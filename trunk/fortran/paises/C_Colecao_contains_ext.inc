@@ -1,0 +1,60 @@
+!----------------type-bound procedures of type C_colecao(_VALOR_)-------------!
+
+  subroutine ALNODO(_VALOR_) ( new ) !nopass
+    class(C_Colecao), pointer, intent(inout)	:: new
+    allocate( COLVALOR(_VALOR_) :: new )
+  end subroutine ALNODO(_VALOR_)
+
+  subroutine DEFVALOR(_VALOR_) (self, valor)
+    class(COLVALOR(_VALOR_))            :: self
+    class(CVALOR(_VALOR_)), pointer     :: valor
+    self%valor => valor
+  end subroutine DEFVALOR(_VALOR_)
+
+  subroutine OBTVALOR(_VALOR_) (self, valor)
+    class(COLVALOR(_VALOR_))                      :: self
+    class(CVALOR(_VALOR_)), pointer, intent(out)  :: valor
+    valor => self%valor
+  end subroutine OBTVALOR(_VALOR_)
+
+  function TEMVALOR(_VALOR_) (self) result(tem)
+      class(COLVALOR(_VALOR_))      :: self
+      logical                       :: tem
+      if ( associated(self%valor) ) then
+        tem = .true.
+      else
+        tem = .false.
+      endif
+  end function TEMVALOR(_VALOR_)
+
+  subroutine MOSVALOR(_VALOR_) (self)
+    class(COLVALOR(_VALOR_))		:: self
+    call self%valor%mostrarTipoObj()
+  end subroutine MOSVALOR(_VALOR_)
+
+  subroutine ADIVALOR(_VALOR_) (self, valor)
+    class(COLVALOR(_VALOR_))                              :: self
+    class(CVALOR(_VALOR_)), pointer, intent(in)           :: valor
+    class(C_Colecao), pointer                     	  :: ptr => null()
+    if ( associated( valor ) ) then
+      call self%adicionarNodoSemOValor()
+      call self%obterUltimo( ptr )
+      call ptr%defineValor( valor )
+      write(*,*) 'de tipo ', trim( valor%obterTipoObj() )
+    else
+      write(*,*) 'Err: valor não está associado.'
+    endif
+  end subroutine ADIVALOR(_VALOR_)
+
+  subroutine ALOVALOR(_VALOR_) (self)
+    class(COLVALOR(_VALOR_))                                      :: self
+    allocate( CVALOR(_VALOR_) :: self%valor )
+  end subroutine ALOVALOR(_VALOR_)
+
+  subroutine DESVALOR(_VALOR_) (self)
+    class(COLVALOR(_VALOR_))                                      :: self
+    deallocate( self%valor )
+    nullify( self%valor )
+  end subroutine DESVALOR(_VALOR_)
+
+  !-----------end type-bound procedures of type C_colecao(_VALOR_)----------!
