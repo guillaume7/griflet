@@ -24,14 +24,14 @@
 
   subroutine ADIVALOR(_VALOR_) (self, valor)
     class(C_colecao)                                      :: self
-    class(CVALOR(_VALOR_)), pointer, intent(in)                 :: valor
+    class(CVALOR(_VALOR_)), pointer, intent(in)           :: valor
     class(C_colecao), pointer                             :: ptr => null()
     if ( associated( valor ) ) then
       call self%adicionarNodo()
       call self%obterUltimo( ptr )
       call ptr%DEFVALOR(_VALOR_)( valor )
       write(*,*) 'de tipo ', trim( valor%obterTipoObj() )
-    else     
+    else
       write(*,*) 'Err: valor não está associado.'
     endif
   end subroutine ADIVALOR(_VALOR_)

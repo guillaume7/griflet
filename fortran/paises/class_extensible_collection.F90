@@ -1,8 +1,5 @@
 !Regra: activar todos os tipos de colecao que
 !se pretendem usar no projecto.
-#define _OBJECTO_ Objecto
-#define _COLECAO_ Colecao
-
 #ifndef _OBJSTR_LENGTH
 #define _OBJSTR_LENGTH 128
 #endif
@@ -16,7 +13,7 @@
 !     Criar interfaces para os metodos associados ao Valor.
 ! 3 - Fazer programa com arrays e com directivas openmp,
 !     pensar numa alternativa ao do while( paraCada() )
-!     para criar uma zona paralelizada segura (threadSafe).
+!     para criar uma zona paralelizada segura ( threadSafe ).
 
 module class_collection
 
@@ -53,17 +50,12 @@ module class_collection
 
   !----------------type C_Colecao---------------------------------!
 
-  type, public, extends(C_Objecto)  ::  C_Colecao
+  type, abstract, public, extends(C_Objecto)  ::  C_Colecao
 
     integer                        :: id = 0
     character(len=_OBJSTR_LENGTH)  :: chave = "_"
     class(C_Colecao),  pointer     :: fundador => null()
     class(C_Colecao),  pointer     :: seguinte => null()
-
-    !Regra: Aqui definem-se apontadores para todos os tipos de 
-    !objectos passiveis de fazer uma colecao
-    class(C_Objecto), pointer      :: Objecto => null()
-    class(C_Colecao), pointer	   :: Colecao => null()
 
   contains
 
@@ -88,7 +80,7 @@ module class_collection
     procedure                       :: temSeguinte
     !C_Colecao methods
     procedure                       :: obterProprio
-    procedure			    :: adicionarNodo
+    procedure			    :: adicionarNodoSemOValor
     procedure                       :: paraCada
     procedure                       :: procuraId
     procedure                       :: obterAnterior
@@ -103,28 +95,84 @@ module class_collection
     procedure 			    :: existeChave
     procedure                       :: mostrarChave
     procedure                       :: procuraChave
-    procedure			    :: adicionar !deferred, abstract interface
-    procedure, nopass               :: alocarNodo  !deferred, abstract interface, nopass
-    procedure, nopass               :: desalocarNodo  !deferred, abstract interface, nopass
+    procedure 			    :: adicionar
+    procedure, nopass     	    :: desalocarNodo
 
-    !Regra: Um metodo de "define", de "obter" e de "tem"
-    !por cada tipo de colecao.
+    !Subrotinas e funções a serem definidas
+    !nas extensões da classe.
+    !Define-se apenas a interface nesta classe
 
-#ifdef _OBJECTO_
-#undef _VALOR_
-#define _VALOR_ _OBJECTO_
-#include "C_Colecao.inc"
-#endif
-
-#ifdef _COLECAO_
-#undef _VALOR_
-#define _VALOR_ _COLECAO_
-#include "C_Colecao.inc"
-#endif
+    procedure(gen_alocarNodo), deferred, nopass 	:: alocarNodo
+    procedure(gen_defineValor), deferred		:: defineValor
+    procedure(gen_obterValor), deferred			:: obterValor
+    procedure(gen_temValor), deferred			:: temValor
+    procedure(gen_mostrarValor), deferred		:: mostrarValor
+    procedure(gen_adicionarValor), deferred		:: adicionarValor
+    procedure(gen_alocarValor), deferred 		:: alocarValor
+    procedure(gen_desalocarValor), deferred		:: desalocarValor
 
   end type C_Colecao
 
+  abstract interface
+
+    subroutine gen_alocarNodo ( new )
+      import 		:: C_Colecao
+      class(C_Colecao), pointer, intent(inout)	:: new
+    end subroutine gen_alocarNodo
+
+    subroutine gen_defineValor (self, valor)
+      import 		:: C_Colecao
+      import 		:: C_Objecto
+      class(C_colecao)                    :: self
+      class(C_objecto), pointer     	  :: valor
+    end subroutine gen_defineValor
+
+    subroutine gen_obterValor (self, valor)
+      import 		:: C_Colecao
+      import 		:: C_Objecto
+      class(C_colecao)                              :: self
+      class(C_objecto), pointer, intent(out)        :: valor
+    end subroutine gen_obterValor
+
+    function gen_temValor (self) result(tem)
+      import 		:: C_Colecao
+      class(C_colecao)              :: self
+      logical                       :: tem
+    end function gen_temValor
+
+    subroutine gen_mostrarValor(self)
+      import 		:: C_Colecao
+      class(C_colecao)              :: self
+    end subroutine gen_mostrarValor
+
+    subroutine gen_adicionarValor (self, valor)
+      import 		:: C_Colecao
+      import 		:: C_Objecto
+      class(C_colecao)                                  :: self
+      class(C_objecto), pointer, intent(in)           	:: valor
+    end subroutine gen_adicionarValor
+
+    subroutine gen_alocarValor (self)
+      import 		:: C_Colecao
+      class(C_colecao)                                  :: self
+    end subroutine gen_alocarValor
+
+    subroutine gen_desalocarValor (self)
+      import 		:: C_Colecao
+      class(C_colecao)                                  :: self
+    end subroutine gen_desalocarValor
+
+  end interface
+
   !-------------end type C_Colecao-------------------------------------!
+
+  !----------------type C_Colecao_Objecto------------------------------!
+
+#undef _VALOR_
+#define _VALOR_ Objecto
+#include "C_Colecao_ext.inc"
+
+  !-------------end type C_Colecao_Objecto-----------------------------!
 
   public                :: str
 
@@ -328,7 +376,7 @@ contains
 
   !C_Colecao methods
 
-  subroutine adicionarNodo(self, nodo, chave)
+  subroutine adicionarNodoSemOValor(self, nodo, chave)
 
     class(C_Colecao)                                      :: self
     class(C_Colecao), pointer, intent(inout), optional    :: nodo
@@ -374,7 +422,7 @@ contains
 
       else
 
-        write(*,*) 'Error in adicionarNodo: Passed argument points to null().'
+        write(*,*) 'Error in adicionarNodoSemOValor: Passed argument points to null().'
 
       endif
 
@@ -401,7 +449,7 @@ contains
 
     end if
 
-  end subroutine adicionarNodo
+  end subroutine adicionarNodoSemOValor
 
   function paraCada(self, node) result(keepup)
 
@@ -537,16 +585,9 @@ contains
     if ( self%temChave() ) then
       call self%mostrarChave()
     end if
-#ifdef _OBJECTO_
-    if ( self%temObjecto() ) then
-      call self%objecto%mostrarTipoObj()
+    if ( self%temValor() ) then
+      call self%mostrarValor()
     end if
-#endif
-#ifdef _COLECAO_
-    if ( self%temColecao() ) then
-      call self%Colecao%mostrarTipoObj()
-    end if
-#endif
 
   end subroutine mostrarNodo
 
@@ -579,16 +620,9 @@ contains
       write(*,*) 'Não se remove o elemento fundador da lista.'
       write(*,*) 'O elemento fundador so pode ser removido externamente.'
     else
-#ifdef _OBJECTO_
-      if ( ultimo%temObjecto() ) then
-        deallocate( ultimo%Objecto )
+      if ( ultimo%temValor() ) then
+        call ultimo%desalocarValor()
       end if
-#endif
-#ifdef _COLECAO_
-      if ( ultimo%temColecao() ) then
-        deallocate( ultimo%Colecao )
-      end if
-#endif
       write(*,*) 'Removido item numero ', ultimo%obterId()
       call self%desalocarNodo( ultimo )
     endif
@@ -684,47 +718,25 @@ contains
 
   end function procuraChave
 
-  !-------------------------Extensão C_Colecao ----------------------!
-
   subroutine adicionar(self, chave)
 
     class(C_Colecao)                                      :: self
     character(len=_OBJSTR_LENGTH), optional		  :: chave
     class(C_Colecao), pointer				  :: nodo => null()
-#ifdef _OBJECTO_
-    class(C_Objecto), pointer				  :: Objecto => null()
-#endif
-#ifdef _COLECAO_
-    class(C_Colecao), pointer				  :: Colecao => null()
-#endif
 
     if ( present( chave ) ) then
-      call self%adicionarNodo( chave = chave )
+      call self%adicionarNodoSemOValor( chave = chave )
     else
-      call self%adicionarNodo()
+      call self%adicionarNodoSemOValor()
     end if
 
     call self%obterUltimo( nodo )
 
-#ifdef _OBJECTO_
-    allocate( Objecto )
-    call nodo%defineObjecto( Objecto )
-    nullify( Objecto )
-#endif
-#ifdef _COLECAO_
-    allocate( Colecao )
-    call nodo%defineColecao( Colecao )
-    nullify( Colecao )
-#endif
+    call nodo%alocarValor( )
 
   end subroutine adicionar
 
-  subroutine alocarNodo( new ) !nopass
-    class(C_Colecao), pointer, intent(inout)	:: new
-    allocate( new )
-  end subroutine alocarNodo
-
-  subroutine desalocarNodo( ptr ) !nopass
+  subroutine desalocarNodo ( ptr ) !nopass
     class(C_Colecao), pointer, intent(inout)	:: ptr
     if ( associated( ptr ) ) then
       deallocate( ptr )
@@ -734,19 +746,15 @@ contains
     endif
   end subroutine desalocarNodo
 
-#ifdef _OBJECTO_
-#undef  _VALOR_
-#define _VALOR_ _OBJECTO_
-#include "C_Colecao_contains.inc"
-#endif
-
-#ifdef _COLECAO_
-#undef  _VALOR_
-#define _VALOR_ _COLECAO_
-#include "C_Colecao_contains.inc"
-#endif
-
   !-----------end type-bound procedures type C_Colecao----------!
+
+  !-------type-bound procedures of type C_colecao_Objecto-------!
+
+#undef _VALOR_
+#define _VALOR_ Objecto
+#include "C_Colecao_contains_ext.inc"
+
+  !-------end type-bound procedures type C_Colecao_Objecto------!
 
   function str(inStr) result(sizedStr)
     character(len=*), intent(in)        :: inStr
@@ -764,19 +772,12 @@ program unitTests_lista_colecao
 
   implicit none
 
-  integer                       :: i 
-  type(C_Colecao)               :: lista
-  class(C_Colecao), pointer     :: nodo => null()
-  class(C_Objecto), pointer     :: item => null()
+  !Regra: as variáveis de type são da classe extendida
+  !mas as variáveis apontadores de classe são da classe abstracta
 
-  do i = 1, 2
-    call lista%adicionarNodo()
-    call lista%obterUltimo( nodo )
-    allocate( item )
-    call nodo%defineObjecto( item )
-    nullify( item )
-    nullify( nodo )
-  end do
+  integer                       	:: i 
+  type(C_Colecao_Objecto)       	:: lista
+  class(C_Colecao), pointer     	:: nodo => null()
 
   call lista%adicionar( chave = str('Olá') )
 
