@@ -5,12 +5,13 @@
 #endif
 
 ! TODO: 
-! 1 - Opção de Chave * Done (define, search)
-! 2a- Mudar o tamanho fixo das chaves de 128 caracteres para um tamanho indefinido...
+! 1 - Opção de Chave (define, search) DONE
+! 1a- Mudar o tamanho fixo das chaves de 128 caracteres para um tamanho indefinido...
 !   - Feito : criei a função pública str() que converte strings de qq tamanho
-!     em strings com o tamanho certo.
-! 2 - Extender C_Colecao para C_Colecao_objecto e para C_Colecao_colecao.
-!     Criar interfaces para os metodos associados ao Valor.
+!     em strings com o tamanho certo. DONE
+! 2 - Extender C_Colecao para C_Colecao_objecto (C_Colecao_Colecao é inválido pq C_Colecao é abstrato).
+!     Criar interfaces para os metodos associados ao Valor. DONE
+! 2a- Criar tipos derivados de objecto "Apple" e "Banana".
 ! 3 - Fazer programa com arrays e com directivas openmp,
 !     pensar numa alternativa ao do while( paraCada() )
 !     para criar uma zona paralelizada segura ( threadSafe ).
@@ -97,6 +98,7 @@ module class_collection
     procedure                       :: procuraChave
     procedure 			    :: adicionar
     procedure, nopass     	    :: desalocarNodo
+    procedure			    :: procura
 
     !Subrotinas e funções a serem definidas
     !nas extensões da classe.
@@ -459,17 +461,18 @@ contains
 
   end subroutine adicionarNodoSemOValor
 
-  function paraCada(self, node) result(keepup)
+  function paraCada(self, node, valor) result(keepup)
 
     !Simulates 'for each <item> in <List> do %%% end do'
     !usage: do while ( Lista%paraCada (item) )
     !usage: %%%
     !usage: end do
 
-    class(C_Colecao)                             :: self
-    class(C_Colecao), pointer, intent(inout)     :: node
-    logical                                      :: keepup    
-    class(C_Colecao), pointer                    :: ptr, nodeZero => null()
+    class(C_Colecao)                             	:: self
+    class(C_Colecao), pointer, intent(inout)     	:: node
+    class(C_Objecto), pointer, optional, intent(out)	:: valor
+    logical                                      	:: keepup    
+    class(C_Colecao), pointer                    	:: ptr, nodeZero => null()
 
     if ( .not. associated( node ) ) then
 
@@ -477,17 +480,19 @@ contains
       call nodeZero%defineId(0)
       call self%obterPrimeiro( ptr )
       call nodeZero%definePrimeiro( ptr )
-      call self%obterProprio( ptr )
+!      call self%obterProprio( ptr )
       call nodeZero%defineSeguinte( ptr )
       node => nodeZero
 
     end if
 
     if ( node%temSeguinte() ) then
-      call node%obterSeguinte(node)
+      call node%obterSeguinte( node )
+      if ( present( valor ) ) call node%obterValor( valor )
       keepup = .true.
     else
-      nullify( node )      
+      nullify( node )
+      if ( present( valor ) ) nullify( valor )
       keepup = .false.
     end if
 
@@ -720,7 +725,7 @@ contains
 	found = .true.
         call item%obterProprio( resultado )
         write(*,*) ' '
-        write(*,*) 'Found key "', trim(chave), '" in element with id', item%obterId()
+        write(*,*) 'Encontrada chave "', trim(chave), '" no elemento com id', item%obterId()
       end if
     end do
 
@@ -753,6 +758,31 @@ contains
     endif
   end subroutine desalocarNodo
 
+  function procura(self, resultado, valor, id, chave) result(found)
+    class(C_Colecao)					:: self
+    class(C_Colecao), pointer, intent(out)      	:: resultado
+    class(C_Objecto), pointer, intent(out), optional	:: valor
+    integer, optional					:: id
+    character(len=_OBJSTR_LENGTH), optional		:: chave
+    logical						:: found
+    if ( present( id ) ) then
+      found = self%procuraId( id, resultado )      
+    elseif ( present( chave ) ) then
+      found = self%procuraChave( chave, resultado )
+    else
+      write(*,*) 'Sem elemento de procura na colecao.'
+      found = .false.
+      nullify( resultado )
+    endif
+    if ( present( valor ) ) then
+      if ( found ) then
+        call resultado%obterValor( valor )
+      else
+        nullify( valor )
+      endif
+    endif
+  end function procura
+
   !-----------end type-bound procedures type C_Colecao----------!
 
   function str(inStr) result(sizedStr)
@@ -774,43 +804,73 @@ program unitTests_lista_colecao
   !Regra: as variáveis de type são da classe extendida
   !mas as variáveis apontadores de classe são da classe abstracta
 
-  integer                       	:: i 
-  type(C_Colecao_Objecto)       	:: lista
-  class(C_Colecao), pointer     	:: nodo => null()
+  type(C_Colecao_Objecto)       	:: objectos
   class(C_Objecto), pointer		:: objecto => null()
+  class(C_Colecao), pointer     	:: nodo => null()
+  integer                       	:: i 
+
+  !Programa que demonstra as features da classe C_Colecao
+  !programada no standard Fortran2003.
+  !A classe C_Colecao permite agrupar elementos dum tipo derivado
+  !da classe C_Objecto numa pilha com indentificativo crescente 
+  !começando em 1.
+  !Os metodos mais usuais dessa colecao são
+  ! - adicionar novos nodos à colecao ( no fim --> LIFO )
+  ! - procura por um nodo por identificativo ou por chave
+  ! - extrair o objecto dum nodo
+  ! - mostrar toda a colecao ou mostrar um nodo da colecao
+  ! - remover um nodo ( o ultimo --> LIFO )
+  ! - remover todos os elementos da colecao menos o primeiro
 
   !Cria e adiciona 2 elementos que guarda na colecao
   do i = 1, 2
-    call lista%adicionar()
+    call objectos%adicionar()
   end do
 
   !Cria e adiciona 1 elemento com uma chave associada.
-  call lista%adicionar( chave = str('Olá') )
+  call objectos%adicionar( chave = str('Olá') )
 
-  !Procura o elemento da lista contendo aquela chave
-  !e mostra
-  if ( lista%procuraChave( str('Olá'), nodo ) ) then
+  !Procura o elemento da colecao contendo aquela chave
+  !e mostra elemento
+  if ( objectos%procura( nodo, chave = str('Olá') ) ) then
     call nodo%mostrarNodo()
-    nullify( nodo )
   end if
 
   !Procura o elemento número 2 da lista,
-  !extrai e mostra
-  if ( lista%procuraId( 2, nodo ) ) then
+  !extrai o valor e mostra
+  if ( objectos%procura( nodo, id = 2 ) ) then
     call nodo%obterValor( objecto )
     call objecto%MostrarTipoObj()
-    nullify( nodo )
   end if
 
-  !Mostra toda a colecao
-  call lista%mostrar()
+  !Igual ao anterior: procura, extrai valor e mostra
+  if ( objectos%procura( nodo, valor = objecto, id = 1 ) ) then
+    call objecto%MostrarTipoObj()
+  end if
+
+  !Mostra toda a colecao de objectos
+  call objectos%mostrar()
+
+  !Faz a mesma coisa mas
+  !utiliza o ciclo "for each" da colecao.
+  nullify( nodo )
+  do while( objectos%paraCada( nodo ) )
+    call nodo%mostrarNodo( )
+  enddo
+
+  !Semelhante ao "for each" anterior
+  !mas extrai o valor e mostra
+  nullify( nodo )
+  do while( objectos%paraCada( nodo, valor = objecto ) )
+    call objecto%mostrarTipoObj()
+  enddo
  
   !Remove todos os itens da colecao
-  !(excepto o proprio item "lista")
-  call lista%finalizar()
+  !(excepto o item fundador da colecao)
+  call objectos%finalizar()
 
-  !Mostra o item "lista"
-  call lista%mostrar()
+  !Mostra o item fundador da colecao
+  call objectos%mostrar()
 
   pause
 
