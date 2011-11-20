@@ -14,7 +14,7 @@
 
   subroutine OBTVALOR(_VALOR_) (self, valor)
     class(COLVALOR(_VALOR_))                      :: self
-    class(CVALOR(_VALOR_)), pointer, intent(out)  :: valor
+    class(C_Objecto), pointer, intent(out)  :: valor
     valor => self%valor
   end subroutine OBTVALOR(_VALOR_)
 
@@ -35,7 +35,7 @@
 
   subroutine ADIVALOR(_VALOR_) (self, valor)
     class(COLVALOR(_VALOR_))                              :: self
-    class(CVALOR(_VALOR_)), pointer, intent(in)           :: valor
+    class(C_Objecto), pointer, intent(in)           :: valor
     class(C_Colecao), pointer                     	  :: ptr => null()
     if ( associated( valor ) ) then
       call self%adicionarNodoSemOValor()
