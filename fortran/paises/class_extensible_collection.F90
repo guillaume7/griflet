@@ -35,7 +35,7 @@ module class_collection
  ! Regra 2: Cada variável derivada do tipo C_Objecto tem que ter 
  ! o campo tipoObj inicializado com o nome do tipo.
 
-  type, public :: C_Objecto
+  type, abstract, public :: C_Objecto
 
     character(len=_OBJSTR_LENGTH)       :: tipoObj = "C_Objecto"
 
@@ -168,13 +168,33 @@ module class_collection
 
   !-------------end type C_Colecao-------------------------------------!
 
-  !----------------type C_Colecao_Objecto------------------------------!
+!  !----------------type C_Colecao_Objecto------------------------------!
+!
+!#undef _VALOR_
+!#define _VALOR_ Objecto
+!#include "C_Colecao_ext.inc"
+!
+!  !-------------end type C_Colecao_Objecto-----------------------------!
+
+  !----------------type C_Maca------------------------------!
+
+  type, public, extends(C_Objecto)    :: C_Maca
+    character(len=_OBJSTR_LENGTH)     :: categoria = "Categoria iIndefinida"
+  contains
+    procedure                         :: defineCategoria
+    procedure                         :: obterCategoria
+    procedure                         :: mostrarCategoria
+  end type C_Maca
+
+  !-------------end type C_Maca-----------------------------!
+
+  !-------------type C_Colecao_Maca-------------------------!
 
 #undef _VALOR_
-#define _VALOR_ Objecto
+#define _VALOR_ Maca
 #include "C_Colecao_ext.inc"
 
-  !-------------end type C_Colecao_Objecto-----------------------------!
+  !-------------end type C_Colecao_Maca---------------------!
 
   public                :: str
 
@@ -203,13 +223,13 @@ contains
 
   !----------------end of type-bound procedures of type C_Objecto-------!
 
-  !---------------type-bound procedures of type C_colecao_Objecto-------!
-
-#undef _VALOR_
-#define _VALOR_ Objecto
-#include "C_Colecao_contains_ext.inc"
-
-  !--------------end type-bound procedures type C_Colecao_Objecto------!
+!  !---------------type-bound procedures of type C_colecao_Objecto-------!
+!
+!#undef _VALOR_
+!#define _VALOR_ Objecto
+!#include "C_Colecao_contains_ext.inc"
+!
+!  !--------------end type-bound procedures type C_Colecao_Objecto------!
 
   !----------------type-bound procedures of type C_Colecao-------------!
 
@@ -785,6 +805,43 @@ contains
 
   !-----------end type-bound procedures type C_Colecao----------!
 
+  !----------type-bound procedures of type C_Maca---------------!
+
+  subroutine defineCategoria(self, tipo)
+    class(C_Maca)                   :: self
+    integer                         :: tipo
+    if ( tipo .eq. 1 ) then
+      self%categoria = Str("Starking")
+    elseif ( tipo .eq. 2 ) then
+      self%categoria = Str("Golden")
+    elseif ( tipo .eq. 3 ) then
+      self%categoria = Str("Reinette")
+    else
+      self%categoria = Str("Appleseed")
+    endif
+  end subroutine defineCategoria
+
+  function obterCategoria(self) result(acategoria)
+    class(C_Maca)                   :: self
+    character(len=_OBJSTR_LENGTH)   :: acategoria
+    acategoria = self%categoria
+  end function obterCategoria
+
+  subroutine mostrarCategoria(self)
+    class(C_Maca)                   :: self
+    write(*,*) 'Maca de categoria ', trim( self%obterCategoria() )
+  end subroutine mostrarCategoria
+
+  !----------end type-bound procedures of type C_Maca-----------!
+
+  !----------type-bound procedures of type C_Colecao_Maca-------!
+
+#undef _VALOR_
+#define _VALOR_ Maca
+#include "C_Colecao_contains_ext.inc"
+
+  !-------end type-bound procedures of type C_Colecao_Maca------!
+
   function str(inStr) result(sizedStr)
     character(len=*), intent(in)        :: inStr
     character(len=_OBJSTR_LENGTH)       :: sizedStr
@@ -804,10 +861,10 @@ program unitTests_lista_colecao
   !Regra: as variáveis de type são da classe extendida
   !mas as variáveis apontadores de classe são da classe abstracta
 
-  type(C_Colecao_Objecto)       	:: objectos
-  class(C_Objecto), pointer		:: objecto => null()
-  class(C_Colecao), pointer     	:: nodo => null()
-  integer                       	:: i 
+  type(C_Colecao_Maca)            :: caixa
+  class(C_objecto), pointer       :: maca => null()
+  class(C_Colecao), pointer       :: nodo => null()
+  integer                         :: i 
 
   !Programa que demonstra as features da classe C_Colecao
   !programada no standard Fortran2003.
@@ -824,53 +881,53 @@ program unitTests_lista_colecao
 
   !Cria e adiciona 2 elementos que guarda na colecao
   do i = 1, 2
-    call objectos%adicionar()
+    call caixa%adicionar()
   end do
 
   !Cria e adiciona 1 elemento com uma chave associada.
-  call objectos%adicionar( chave = str('Olá') )
+  call caixa%adicionar( chave = str('Maçã especial') )
 
   !Procura o elemento da colecao contendo aquela chave
   !e mostra elemento
-  if ( objectos%procura( nodo, chave = str('Olá') ) ) then
+  if ( caixa%procura( nodo, chave = str('Maçã especial') ) ) then
     call nodo%mostrarNodo()
   end if
 
   !Procura o elemento número 2 da lista,
   !extrai o valor e mostra
-  if ( objectos%procura( nodo, id = 2 ) ) then
-    call nodo%obterValor( objecto )
-    call objecto%MostrarTipoObj()
+  if ( caixa%procura( nodo, id = 2 ) ) then
+    call nodo%obterValor( maca )
+    call maca%mostrarCategoria()
   end if
 
   !Igual ao anterior: procura, extrai valor e mostra
-  if ( objectos%procura( nodo, valor = objecto, id = 1 ) ) then
-    call objecto%MostrarTipoObj()
+  if ( caixa%procura( nodo, valor = maca, id = 1 ) ) then
+    call maca%mostrarCategoria()
   end if
 
   !Mostra toda a colecao de objectos
-  call objectos%mostrar()
+  call caixa%mostrar()
 
   !Faz a mesma coisa mas
   !utiliza o ciclo "for each" da colecao.
   nullify( nodo )
-  do while( objectos%paraCada( nodo ) )
+  do while( caixa%paraCada( nodo ) )
     call nodo%mostrarNodo( )
   enddo
 
   !Semelhante ao "for each" anterior
   !mas extrai o valor e mostra
   nullify( nodo )
-  do while( objectos%paraCada( nodo, valor = objecto ) )
-    call objecto%mostrarTipoObj()
+  do while( caixa%paraCada( nodo, valor = maca ) )
+    call maca%mostrarCategoria()
   enddo
  
   !Remove todos os itens da colecao
   !(excepto o item fundador da colecao)
-  call objectos%finalizar()
+  call caixa%finalizar()
 
   !Mostra o item fundador da colecao
-  call objectos%mostrar()
+  call caixa%mostrar()
 
   pause
 
