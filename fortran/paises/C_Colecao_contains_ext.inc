@@ -8,12 +8,12 @@
 
   subroutine DEFVALOR(_VALOR_) (self, valor)
     class(COLVALOR(_VALOR_))            :: self
-    class(CVALOR(_VALOR_)), pointer     :: valor
+    class(C_Objecto), pointer     :: valor
     self%valor => valor
   end subroutine DEFVALOR(_VALOR_)
 
   subroutine OBTVALOR(_VALOR_) (self, valor)
-    class(COLVALOR(_VALOR_))                      :: self
+    class(COLVALOR(_VALOR_))                :: self
     class(C_Objecto), pointer, intent(out)  :: valor
     valor => self%valor
   end subroutine OBTVALOR(_VALOR_)
@@ -34,9 +34,9 @@
   end subroutine MOSVALOR(_VALOR_)
 
   subroutine ADIVALOR(_VALOR_) (self, valor)
-    class(COLVALOR(_VALOR_))                              :: self
-    class(C_Objecto), pointer, intent(in)           :: valor
-    class(C_Colecao), pointer                     	  :: ptr => null()
+    class(COLVALOR(_VALOR_))                              	:: self
+    class(C_Objecto), pointer, intent(in)           		:: valor
+    class(C_Colecao), pointer                     			:: ptr => null()
     if ( associated( valor ) ) then
       call self%adicionarNodoSemOValor()
       call self%obterUltimo( ptr )
@@ -48,13 +48,13 @@
   end subroutine ADIVALOR(_VALOR_)
 
   subroutine ALOVALOR(_VALOR_) (self)
-    class(COLVALOR(_VALOR_))                                      :: self
-    allocate( CVALOR(_VALOR_) :: self%valor )
+    class(COLVALOR(_VALOR_))                                :: self
+    allocate( CVALOR(_VALOR_) 								:: self%valor )
     call self%valor%defineTipoObj( Str(TOSTRING(CVALOR(_VALOR_))) )
   end subroutine ALOVALOR(_VALOR_)
 
   subroutine DESVALOR(_VALOR_) (self)
-    class(COLVALOR(_VALOR_))                                      :: self
+    class(COLVALOR(_VALOR_))                               	:: self
     deallocate( self%valor )
     nullify( self%valor )
   end subroutine DESVALOR(_VALOR_)

@@ -30,17 +30,17 @@
 
   type, public, extends(C_Colecao)  ::  COLVALOR(_VALOR_)
 
-    class(CVALOR(_VALOR_)),  pointer     :: valor => null()
+!    class(CVALOR(_VALOR_)),  pointer     :: valor => null()
 
   contains
 
     procedure, nopass		    :: alocarNodo 	=> ALNODO(_VALOR_)
-    procedure			    :: defineValor	=> DEFVALOR(_VALOR_)
-    procedure			    :: obterValor	=> OBTVALOR(_VALOR_)
-    procedure			    :: temValor		=> TEMVALOR(_VALOR_)
-    procedure			    :: mostrarValor	=> MOSVALOR(_VALOR_)
-    procedure			    :: adicionarValor	=> ADIVALOR(_VALOR_)
-    procedure			    :: alocarValor	=> ALOVALOR(_VALOR_)
+    procedure			    	:: defineValor	=> DEFVALOR(_VALOR_)
+    procedure			    	:: obterValor	=> OBTVALOR(_VALOR_)
+    procedure			    	:: temValor		=> TEMVALOR(_VALOR_)
+    procedure			    	:: mostrarValor	=> MOSVALOR(_VALOR_)
+    procedure			    	:: adicionarValor	=> ADIVALOR(_VALOR_)
+    procedure			    	:: alocarValor	=> ALOVALOR(_VALOR_)
     procedure		    	    :: desalocarValor	=> DESVALOR(_VALOR_)
 
   end type COLVALOR(_VALOR_)
