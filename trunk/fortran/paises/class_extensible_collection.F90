@@ -1,5 +1,3 @@
-!Regra: activar todos os tipos de colecao que
-!se pretendem usar no projecto.
 #ifndef _OBJSTR_LENGTH
 #define _OBJSTR_LENGTH 128
 #endif
@@ -11,7 +9,13 @@
 !     em strings com o tamanho certo. DONE
 ! 2 - Extender C_Colecao para C_Colecao_objecto (C_Colecao_Colecao é inválido pq C_Colecao é abstrato).
 !     Criar interfaces para os metodos associados ao Valor. DONE
-! 2a- Criar tipos derivados de objecto "Apple" e "Banana".
+! 2a- Criar tipos derivados de objecto "Apple" e "Banana --> Conumdrum --> refactor!
+! 2b- Refactorizar tudo: Para qualquer tipo genérico "apple", "banana" ...
+!       ... existe um apontador para null na classe C_Capsula.
+!       O campo "valor" da classe C_Colecao é um apontador
+!       para null do tipo C_Capsula.
+!       Existem extensoes opcionais da classe C_Colecao
+!       denominadas "C_Colecao_apple", "C_Colecao_banana", ...
 ! 3 - Fazer programa com arrays e com directivas openmp,
 !     pensar numa alternativa ao do while( paraCada() )
 !     para criar uma zona paralelizada segura ( threadSafe ).
@@ -29,15 +33,17 @@ module class_collection
 
   private
 
+ ! Os tipos Objecto e Maca são exemplos de objectos que podem
+ ! encapsulados e colocados numa pilha (C_Colecao).
+
  !----------------------type C_Objecto------------------------------!
 
- ! Regra 1: Todos os tipos tem que ser tipos derivados de C_Objecto.
- ! Regra 2: Cada variável derivada do tipo C_Objecto tem que ter 
+ ! Regra 1: Cada variável derivada do tipo C_Objecto tem que ter
  ! o campo tipoObj inicializado com o nome do tipo.
-
-  type, abstract, public :: C_Objecto
+  type, public :: C_Objecto
 
     character(len=_OBJSTR_LENGTH)       :: tipoObj = "C_Objecto"
+
 
   contains
  
@@ -49,14 +55,54 @@ module class_collection
 
   !----------------end type C_Objecto------------------------------!
 
+  !----------------type C_Maca------------------------------!
+
+  type, public, extends(C_Objecto)      :: C_Maca
+    character(len=_OBJSTR_LENGTH)       :: categoria = "Categoria Indefinida"
+  contains
+    procedure                           :: defineCategoria
+    procedure                           :: obterCategoria
+    procedure                           :: temCategoria
+    procedure                           :: mostrarCategoria
+  end type C_Maca
+
+  !-------------end type C_Maca-----------------------------!
+
+  ! Os tipos C_Capsula e C_Colecao sao os tipos importantes
+  ! deste modulo.
+
+  !----------------type C_Capsula------------------------------!
+
+  type, public                          :: C_Capsula
+
+    class(C_Objecto), pointer           :: Objecto => null()
+    class(C_Maca), pointer              :: Maca => null()
+
+  contains
+
+    procedure, nopass                   :: nullProc
+
+#undef _VALOR_
+#define _VALOR_ Objecto
+#include "C_Capsula.inc"
+
+#undef _VALOR_
+#define _VALOR_ Maca
+#include "C_Capsula.inc"
+
+  end type C_Capsula
+
+  !-------------end type C_Capsula-----------------------------!
+
   !----------------type C_Colecao---------------------------------!
 
-  type, abstract, public, extends(C_Objecto)  ::  C_Colecao
+  type, public, extends(C_Objecto)  ::  C_Colecao
 
     integer                        :: id = 0
     character(len=_OBJSTR_LENGTH)  :: chave = "_"
     class(C_Colecao),  pointer     :: fundador => null()
     class(C_Colecao),  pointer     :: seguinte => null()
+    class(C_Capsula),  pointer     :: valor => null()
 
   contains
 
@@ -67,51 +113,55 @@ module class_collection
     !Sets
     procedure                       :: defineId
     procedure                       :: defineChave
+    procedure                       :: defineValor
     procedure                       :: definePrimeiro
     procedure                       :: defineSeguinte
     !Gets
     procedure                       :: obterId
     procedure                       :: obterChave
+    procedure                       :: obterValor
     procedure                       :: obterPrimeiro
     procedure                       :: obterSeguinte
     !Has
     procedure                       :: temId
     procedure                       :: temChave
+    procedure                       :: temValor
     procedure                       :: temPrimeiro
     procedure                       :: temSeguinte
+    !Show
+    procedure                       :: mostrarId
+    procedure                       :: mostrarChave
+    procedure                       :: mostrarValor
+
     !C_Colecao methods
     procedure                       :: obterProprio
-    procedure			    :: adicionarNodoSemOValor
-    procedure                       :: paraCada
-    procedure                       :: procuraId
     procedure                       :: obterAnterior
     procedure                       :: obterUltimo
-    procedure                       :: mostrarId
-    procedure                       :: mostrarNodo
+
     procedure                       :: mostrar
+    procedure                       :: mostrarNodo
+
+    procedure                       :: adicionar
+    procedure			            :: adicionarNodoSemOValor
+    procedure(gen_adicionarValor), deferred     :: adicionarValor
+
+    procedure(gen_alocarNodo), deferred, nopass :: alocarNodo
+!    procedure(gen_alocarValor), deferred        :: alocarValor
+
+    procedure, nopass               :: desalocarNodo
+!    procedure(gen_desalocarValor), deferred     :: desalocarValor
+
+    procedure                       :: paraCada
     procedure                       :: remover
     procedure                       :: tamanho
+    procedure 			            :: existeChave
+
+    procedure                       :: procura
+    procedure                       :: procuraId
+    procedure                       :: procuraChave
+
     procedure                       :: redefineId
     procedure                       :: redefinePrimeiro
-    procedure 			    :: existeChave
-    procedure                       :: mostrarChave
-    procedure                       :: procuraChave
-    procedure 			    :: adicionar
-    procedure, nopass     	    :: desalocarNodo
-    procedure			    :: procura
-
-    !Subrotinas e funções a serem definidas
-    !nas extensões da classe.
-    !Define-se apenas a interface nesta classe
-
-    procedure(gen_alocarNodo), deferred, nopass 	:: alocarNodo
-    procedure(gen_defineValor), deferred		:: defineValor
-    procedure(gen_obterValor), deferred			:: obterValor
-    procedure(gen_temValor), deferred			:: temValor
-    procedure(gen_mostrarValor), deferred		:: mostrarValor
-    procedure(gen_adicionarValor), deferred		:: adicionarValor
-    procedure(gen_alocarValor), deferred 		:: alocarValor
-    procedure(gen_desalocarValor), deferred		:: desalocarValor
 
   end type C_Colecao
 
@@ -168,51 +218,23 @@ module class_collection
 
   !-------------end type C_Colecao-------------------------------------!
 
-!  !----------------type C_Colecao_Objecto------------------------------!
-!
-!#undef _VALOR_
-!#define _VALOR_ Objecto
-!#include "C_Colecao_ext.inc"
-!
-!  !-------------end type C_Colecao_Objecto-----------------------------!
-
-  !----------------type C_Maca------------------------------!
-
-  type, public, extends(C_Objecto)    :: C_Maca
-    character(len=_OBJSTR_LENGTH)     :: categoria = "Categoria iIndefinida"
-  contains
-    procedure                         :: defineCategoria
-    procedure                         :: obterCategoria
-    procedure                         :: mostrarCategoria
-  end type C_Maca
-
-  !-------------end type C_Maca-----------------------------!
-
-  !-------------type C_Colecao_Maca-------------------------!
-
-#undef _VALOR_
-#define _VALOR_ Maca
-#include "C_Colecao_ext.inc"
-
-  !-------------end type C_Colecao_Maca---------------------!
-
   public                :: str
 
 contains
 
   !----------------type-bound procedures of type C_Objecto--------------!
 
-  function obterTipoObj(self) result(str)
-    class(C_Objecto), intent(in)     :: self
-    character(len=_OBJSTR_LENGTH)    :: str
-    str = self%tipoObj
-  end function obterTipoObj
-
   subroutine defineTipoObj(self, str)
     class(C_Objecto)                 :: self
     character(len=_OBJSTR_LENGTH)    :: str
     self%tipoObj = str
   end subroutine defineTipoObj
+
+  function obterTipoObj(self) result(str)
+    class(C_Objecto), intent(in)     :: self
+    character(len=_OBJSTR_LENGTH)    :: str
+    str = self%tipoObj
+  end function obterTipoObj
 
   subroutine mostrarTipoObj(self)
     class(C_Objecto)                    :: self
@@ -223,13 +245,60 @@ contains
 
   !----------------end of type-bound procedures of type C_Objecto-------!
 
-!  !---------------type-bound procedures of type C_colecao_Objecto-------!
-!
-!#undef _VALOR_
-!#define _VALOR_ Objecto
-!#include "C_Colecao_contains_ext.inc"
-!
-!  !--------------end type-bound procedures type C_Colecao_Objecto------!
+  !----------type-bound procedures of type C_Maca---------------!
+
+  subroutine defineCategoria(self, tipo)
+    class(C_Maca)                   :: self
+    integer                         :: tipo
+    if ( tipo .eq. 1 ) then
+      self%categoria = Str("Starking")
+    elseif ( tipo .eq. 2 ) then
+      self%categoria = Str("Golden")
+    elseif ( tipo .eq. 3 ) then
+      self%categoria = Str("Reinette")
+    else
+      self%categoria = Str("Appleseed")
+    endif
+  end subroutine defineCategoria
+
+  function obterCategoria(self) result(acategoria)
+    class(C_Maca)                   :: self
+    character(len=_OBJSTR_LENGTH)   :: acategoria
+    acategoria = self%categoria
+  end function obterCategoria
+
+  function temCategoria(self) result(tem)
+    class(C_Maca)                   :: self
+    logical                         :: tem
+    if ( self%categoria .eq. "Categoria Indefinida" ) then
+      tem = .false.
+    else
+      tem = .true.
+    end if
+  end function temCategoria
+
+  subroutine mostrarCategoria(self)
+    class(C_Maca)                   :: self
+    write(*,*) 'Maca de categoria ', trim( self%obterCategoria() )
+  end subroutine mostrarCategoria
+
+  !----------end type-bound procedures of type C_Maca-----------!
+
+  !----------type-bound procedures of type C_Capsula------------!
+
+  subroutine nullProc()
+
+  end subroutine nullProc
+
+#undef _VALOR_
+#define _VALOR_ Objecto
+#include "C_Capsula_contains.inc"
+
+#undef _VALOR_
+#define _VALOR_ Maca
+#include "C_Capsula_contains.inc"
+
+  !----------end type-bound procedures of type C_Capsula--------!
 
   !----------------type-bound procedures of type C_Colecao-------------!
 
@@ -292,6 +361,12 @@ contains
     end if
   end subroutine defineChave
 
+  subroutine defineValor (self, valor)
+    class(C_Colecao)                :: self
+    class(C_Capsula), pointer       :: valor
+    self%valor => valor
+  end subroutine defineValor
+
   subroutine definePrimeiro(self, primeiro)
     class(C_Colecao)              :: self
     class(C_Colecao), pointer     :: primeiro
@@ -330,6 +405,12 @@ contains
     character(len=_OBJSTR_LENGTH)  :: chave
     chave = self%chave
   end function obterChave
+
+  subroutine obterValor (self, valor)
+    class(C_Colecao)                        :: self
+    class(C_Capsula), pointer, intent(out)  :: valor
+    valor => self%valor
+  end subroutine obterValor
 
   subroutine obterPrimeiro(self, primeiro)
     class(C_Colecao)                          :: self
@@ -378,6 +459,16 @@ contains
 
   end function temChave
 
+  function temValor (self) result(tem)
+      class(C_Colecao)              :: self
+      logical                       :: tem
+      if ( associated(self%valor) ) then
+        tem = .true.
+      else
+        tem = .false.
+      endif
+  end function temValor
+
   function temPrimeiro(self) result(tem)
   
     class(C_Colecao)             :: self
@@ -404,13 +495,104 @@ contains
 
   end function temSeguinte
 
+  !Show
+  subroutine mostrarId(self)
+
+    class(C_Colecao)          :: self
+    class(C_Colecao), pointer :: ptr
+
+    call self%obterAnterior(ptr)
+
+    write(*,*) ' '
+    if ( self%obterId() .eq. ptr%obterId() ) then
+      write(*,*) 'O item e o fundador da lista da colecao.'
+    else
+      write(*,*) 'O item anterior tem numero ', ptr%obterId()
+    end if
+
+    write(*,*) 'O numero do item e o ', self%obterId()
+
+    call self%obterSeguinte(ptr)
+
+    if ( .not. self%temSeguinte() ) then
+      write(*,*) 'O item e o ultimo da lista.'
+    else
+      write(*,*) 'O item seguinte tem numero', ptr%obterId()
+    end if
+
+  end subroutine mostrarId
+
+  subroutine mostrarChave(self)
+    class(C_Colecao)                :: self
+    write(*,*) 'a chave é "', trim(self%obterChave()),'".'
+  end subroutine mostrarChave
+
+  subroutine mostrarValor (self)
+    class(C_Colecao)                :: self
+    class(C_Capsula), pointer       :: valor
+    call self%obterValor( valor )
+    call valor%mostrar()
+  end subroutine mostrarValor
+
   !C_Colecao methods
 
-  subroutine adicionarNodoSemOValor(self, nodo, chave)
+  subroutine mostrarNodo(self)
+
+    class(C_Colecao)          :: self
+
+    call self%mostrarId()
+    if ( self%temChave() ) then
+      call self%mostrarChave()
+    end if
+    if ( self%temValor() ) then
+      call self%mostrarValor()
+    end if
+
+  end subroutine mostrarNodo
+
+  subroutine mostrar(self)
+
+    class(C_Colecao)          :: self
+    class(C_Colecao), pointer :: item => null()
+
+    do while ( self%paraCada(item) )
+      call item%mostrarNodo()
+    end do
+
+    write(*,*) ''
+    write(*,*) 'A lista contem ', self%tamanho(), ' elementos'
+    write(*,*) 'Lista mostrada.'
+    write(*,*) ''
+
+  end subroutine mostrar
+
+  subroutine adicionar(self, valor, chave)
+
+    class(C_Colecao)                            :: self
+    class(C_Capsule), pointer                   :: valor
+    character(len=_OBJSTR_LENGTH), optional     :: chave
+    class(C_Colecao), pointer                   :: nodo => null()
+
+    if ( present( chave ) ) then
+      call self%adicionarNodo( chave = chave )
+    else
+      call self%adicionarNodo()
+    end if
+
+    call self%obterUltimo( nodo )
+    if ( associated( valor ) ) then
+      call nodo%defineValor( valor )
+    else
+      write(*,*) 'Erro: a capsula a adicionar na pilha aponta para null()'
+    end if
+
+  end subroutine adicionar
+
+  subroutine adicionarNodo(self, nodo, chave)
 
     class(C_Colecao)                                      :: self
     class(C_Colecao), pointer, intent(inout), optional    :: nodo
-    character(len=_OBJSTR_LENGTH), optional		  :: chave
+    character(len=_OBJSTR_LENGTH), optional		          :: chave
     class(C_Colecao), pointer                             :: ultimo, new => null(), primeiro
 
     if ( present( nodo ) ) then
@@ -479,7 +661,7 @@ contains
 
     end if
 
-  end subroutine adicionarNodoSemOValor
+  end subroutine adicionarNodo
 
   function paraCada(self, node, valor) result(keepup)
 
@@ -490,7 +672,7 @@ contains
 
     class(C_Colecao)                             	:: self
     class(C_Colecao), pointer, intent(inout)     	:: node
-    class(C_Objecto), pointer, optional, intent(out)	:: valor
+    class(C_Capsula), pointer, optional, intent(out)	:: valor
     logical                                      	:: keepup    
     class(C_Colecao), pointer                    	:: ptr, nodeZero => null()
 
@@ -584,61 +766,6 @@ contains
 
   end subroutine obterUltimo
 
-  subroutine mostrarId(self)
-
-    class(C_Colecao)          :: self
-    class(C_Colecao), pointer :: ptr
-
-    call self%obterAnterior(ptr)
-
-    write(*,*) ' '
-    if ( self%obterId() .eq. ptr%obterId() ) then
-      write(*,*) 'O item e o fundador da lista da colecao.'
-    else
-      write(*,*) 'O item anterior tem numero ', ptr%obterId()
-    end if
-
-    write(*,*) 'O numero do item e o ', self%obterId()
-
-    call self%obterSeguinte(ptr)
-
-    if ( .not. self%temSeguinte() ) then
-      write(*,*) 'O item e o ultimo da lista.'
-    else
-      write(*,*) 'O item seguinte tem numero', ptr%obterId()
-    end if
-
-  end subroutine mostrarId
-
-  subroutine mostrarNodo(self)
-
-    class(C_Colecao)          :: self
-
-    call self%mostrarId()
-    if ( self%temChave() ) then
-      call self%mostrarChave()
-    end if
-    if ( self%temValor() ) then
-      call self%mostrarValor()
-    end if
-
-  end subroutine mostrarNodo
-
-  subroutine mostrar(self)
-
-    class(C_Colecao)          :: self
-    class(C_Colecao), pointer :: item => null()
-
-    do while ( self%paraCada(item) )
-      call item%mostrarNodo()
-    end do
-
-    write(*,*) ''
-    write(*,*) 'A lista contem ', self%tamanho(), ' elementos' 
-    write(*,*) 'Lista mostrada.'
-    write(*,*) ''
-
-  end subroutine mostrar
 
   subroutine remover(self)
 
@@ -725,11 +852,6 @@ contains
 
   end function existeChave
 
-  subroutine mostrarChave(self)
-    class(C_Colecao)				:: self
-    write(*,*) 'a chave é "', trim(self%obterChave()),'".'
-  end subroutine mostrarChave
-
   function procuraChave(self, chave, resultado) result(found)
 
     class(C_Colecao)				:: self
@@ -750,23 +872,6 @@ contains
     end do
 
   end function procuraChave
-
-  subroutine adicionar(self, chave)
-
-    class(C_Colecao)                                      :: self
-    character(len=_OBJSTR_LENGTH), optional		  :: chave
-    class(C_Colecao), pointer				  :: nodo => null()
-
-    if ( present( chave ) ) then
-      call self%adicionarNodoSemOValor( chave = chave )
-    else
-      call self%adicionarNodoSemOValor()
-    end if
-
-    call self%obterUltimo( nodo )
-    call nodo%alocarValor( )
-
-  end subroutine adicionar
 
   subroutine desalocarNodo ( ptr ) !nopass
     class(C_Colecao), pointer, intent(inout)	:: ptr
@@ -805,43 +910,6 @@ contains
 
   !-----------end type-bound procedures type C_Colecao----------!
 
-  !----------type-bound procedures of type C_Maca---------------!
-
-  subroutine defineCategoria(self, tipo)
-    class(C_Maca)                   :: self
-    integer                         :: tipo
-    if ( tipo .eq. 1 ) then
-      self%categoria = Str("Starking")
-    elseif ( tipo .eq. 2 ) then
-      self%categoria = Str("Golden")
-    elseif ( tipo .eq. 3 ) then
-      self%categoria = Str("Reinette")
-    else
-      self%categoria = Str("Appleseed")
-    endif
-  end subroutine defineCategoria
-
-  function obterCategoria(self) result(acategoria)
-    class(C_Maca)                   :: self
-    character(len=_OBJSTR_LENGTH)   :: acategoria
-    acategoria = self%categoria
-  end function obterCategoria
-
-  subroutine mostrarCategoria(self)
-    class(C_Maca)                   :: self
-    write(*,*) 'Maca de categoria ', trim( self%obterCategoria() )
-  end subroutine mostrarCategoria
-
-  !----------end type-bound procedures of type C_Maca-----------!
-
-  !----------type-bound procedures of type C_Colecao_Maca-------!
-
-#undef _VALOR_
-#define _VALOR_ Maca
-#include "C_Colecao_contains_ext.inc"
-
-  !-------end type-bound procedures of type C_Colecao_Maca------!
-
   function str(inStr) result(sizedStr)
     character(len=*), intent(in)        :: inStr
     character(len=_OBJSTR_LENGTH)       :: sizedStr
@@ -862,7 +930,8 @@ program unitTests_lista_colecao
   !mas as variáveis apontadores de classe são da classe abstracta
 
   type(C_Colecao_Maca)            :: caixa
-  class(C_objecto), pointer       :: maca => null()
+  class(C_Maca), pointer          :: maca => null()
+  class(C_Objecto), pointer       :: val => null()
   class(C_Colecao), pointer       :: nodo => null()
   integer                         :: i 
 
@@ -896,7 +965,8 @@ program unitTests_lista_colecao
   !Procura o elemento número 2 da lista,
   !extrai o valor e mostra
   if ( caixa%procura( nodo, id = 2 ) ) then
-    call nodo%obterValor( maca )
+    call nodo%obterValor( val )
+    maca => val
     call maca%mostrarCategoria()
   end if
 
