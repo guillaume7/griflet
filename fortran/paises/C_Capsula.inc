@@ -14,6 +14,10 @@
 #define MOSCAPSULA(x) AFTERMOS(x)
 #define AFTERSELF(x) self% ## x
 #define SELFCAPSULA(x) AFTERSELF(x)
+#define AFTERALO(x) alocar ## x
+#define ALOCAPSULA(x) AFTERSELF(x)
+#define AFTERDES(x) desalocar ## x
+#define DESCAPSULA(x) AFTERSELF(x)
 #define AFTERC(x) C_ ## x
 #define CVALOR(x) AFTERC(x)
 #define STRINGIFY(x) #x
@@ -24,3 +28,5 @@
 	procedure						:: OBTCAPSULA(_VALOR_)
 	procedure						:: TEMCAPSULA(_VALOR_)
 	procedure						:: MOSCAPSULA(_VALOR_)
+	procedure						:: ALOCAPSULA(_VALOR_)
+	procedure						:: DESCAPSULA(_VALOR_)

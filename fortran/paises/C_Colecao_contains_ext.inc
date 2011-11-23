@@ -8,20 +8,20 @@
 
   subroutine DEFVALOR(_VALOR_) (self, valor)
     class(COLVALOR(_VALOR_))            :: self
-    class(C_Objecto), pointer     :: valor
+    type(CVALOR(_VALOR_)), pointer     	:: valor
     self%valor => valor
   end subroutine DEFVALOR(_VALOR_)
 
   subroutine OBTVALOR(_VALOR_) (self, valor)
-    class(COLVALOR(_VALOR_))                :: self
-    class(C_Objecto), pointer, intent(out)  :: valor
+    class(COLVALOR(_VALOR_))                	  	:: self
+    type(CVALOR(_VALOR_)), pointer, intent(out)  	:: valor
     valor => self%valor
   end subroutine OBTVALOR(_VALOR_)
 
   function TEMVALOR(_VALOR_) (self) result(tem)
       class(COLVALOR(_VALOR_))      :: self
       logical                       :: tem
-      if ( associated(self%valor) ) then
+      if ( associated( self%valor ) ) then
         tem = .true.
       else
         tem = .false.
@@ -30,27 +30,17 @@
 
   subroutine MOSVALOR(_VALOR_) (self)
     class(COLVALOR(_VALOR_))		:: self
-    call self%valor%mostrarTipoObj()
+    type(CVALOR(_VALOR_)), pointer 	:: valor
+    call OBTVALOR(_VALOR_) ( self, valor)
+    call valor%mostrarTipoObj()    
   end subroutine MOSVALOR(_VALOR_)
-
-  subroutine ADIVALOR(_VALOR_) (self, valor)
-    class(COLVALOR(_VALOR_))                              	:: self
-    class(C_Objecto), pointer, intent(in)           		:: valor
-    class(C_Colecao), pointer                     			:: ptr => null()
-    if ( associated( valor ) ) then
-      call self%adicionarNodoSemOValor()
-      call self%obterUltimo( ptr )
-      call ptr%defineValor( valor )
-      write(*,*) 'de tipo ', trim( valor%obterTipoObj() )
-    else
-      write(*,*) 'Err: valor não está associado.'
-    endif
-  end subroutine ADIVALOR(_VALOR_)
 
   subroutine ALOVALOR(_VALOR_) (self)
     class(COLVALOR(_VALOR_))                                :: self
-    allocate( CVALOR(_VALOR_) 								:: self%valor )
-    call self%valor%defineTipoObj( Str(TOSTRING(CVALOR(_VALOR_))) )
+    type(CVALOR(_VALOR_)),pointer							:: valor
+    allocate( valor )
+    call valor%defineTipoObj( Str(TOSTRING(CVALOR(_VALOR_))) )
+    call DEFVALOR(_VALOR_) (self, valor)
   end subroutine ALOVALOR(_VALOR_)
 
   subroutine DESVALOR(_VALOR_) (self)
