@@ -27,7 +27,7 @@ module class_collection
   !Regra 2: Encapsular em procedures os usos de 'associated' com retorno
   !de resultado verdadeiro/falso.
   !Regra 3: Para cada campo num tipo, tem que haver um metodo "defineCampo"
-  !e um metodo "obterCampo".
+  !e um metodo "obtemCampo".
 
   implicit none
 
@@ -44,12 +44,11 @@ module class_collection
 
     character(len=_OBJSTR_LENGTH)       :: tipoObj = "C_Objecto"
 
-
   contains
  
     procedure                           :: defineTipoObj
-    procedure                           :: obterTipoObj
-    procedure                           :: mostrarTipoObj
+    procedure                           :: obtemTipoObj
+    procedure                           :: mostraTipoObj
 
   end type C_Objecto
 
@@ -61,9 +60,9 @@ module class_collection
     character(len=_OBJSTR_LENGTH)       :: categoria = "Categoria Indefinida"
   contains
     procedure                           :: defineCategoria
-    procedure                           :: obterCategoria
+    procedure                           :: obtemCategoria
     procedure                           :: temCategoria
-    procedure                           :: mostrarCategoria
+    procedure                           :: mostraCategoria
   end type C_Maca
 
   !-------------end type C_Maca-----------------------------!
@@ -75,20 +74,27 @@ module class_collection
 
   type, public                          :: C_Capsula
 
+    character(len=_OBJSTR_LENGTH)       :: genero = "indefinido"
     class(C_Objecto), pointer           :: Objecto => null()
     class(C_Maca), pointer              :: Maca => null()
 
   contains
 
-    procedure, nopass                   :: nullProc
+    !metodos do identificativo do genero
+    procedure                             :: defineGenero
+    procedure                             :: obtemGenero
+    procedure                             :: temGenero
+    procedure                             :: mostraGenero
 
-#undef _VALOR_
-#define _VALOR_ Objecto
-#include "C_Capsula.inc"
+    !metodos que abrangem todos os generos
+    procedure                             :: limparCapsula
+    procedure                             :: mostrarCapsula
 
-#undef _VALOR_
-#define _VALOR_ Maca
-#include "C_Capsula.inc"
+    !métodos que apontam para um genero de tipo ou de classe
+    procedure(alocarObjecto), pointer     :: alocar
+    procedure(desalocarObjecto), pointer  :: desalocar
+    procedure(temObjecto), pointer        :: tem
+    procedure(mostraObjecto), pointer     :: mostra
 
   end type C_Capsula
 
@@ -96,7 +102,7 @@ module class_collection
 
   !----------------type C_Colecao---------------------------------!
 
-  type, public, extends(C_Objecto)  ::  C_Colecao
+  type, public                     ::  C_Colecao
 
     integer                        :: id = 0
     character(len=_OBJSTR_LENGTH)  :: chave = "_"
@@ -117,11 +123,11 @@ module class_collection
     procedure                       :: definePrimeiro
     procedure                       :: defineSeguinte
     !Gets
-    procedure                       :: obterId
-    procedure                       :: obterChave
-    procedure                       :: obterValor
-    procedure                       :: obterPrimeiro
-    procedure                       :: obterSeguinte
+    procedure                       :: obtemId
+    procedure                       :: obtemChave
+    procedure                       :: obtemValor
+    procedure                       :: obtemPrimeiro
+    procedure                       :: obtemSeguinte
     !Has
     procedure                       :: temId
     procedure                       :: temChave
@@ -129,30 +135,25 @@ module class_collection
     procedure                       :: temPrimeiro
     procedure                       :: temSeguinte
     !Show
-    procedure                       :: mostrarId
-    procedure                       :: mostrarChave
-    procedure                       :: mostrarValor
+    procedure                       :: mostraId
+    procedure                       :: mostraChave
+    procedure                       :: mostraValor
 
     !C_Colecao methods
-    procedure                       :: obterProprio
-    procedure                       :: obterAnterior
-    procedure                       :: obterUltimo
+    procedure                       :: obtemProprio
+    procedure                       :: obtemAnterior
+    procedure                       :: obtemUltimo
 
-    procedure                       :: mostrar
-    procedure                       :: mostrarNodo
+    procedure                       :: mostra
+    procedure                       :: mostraNodo
 
-    procedure                       :: adicionar
-    procedure			            :: adicionarNodoSemOValor
-    procedure(gen_adicionarValor), deferred     :: adicionarValor
-
-    procedure(gen_alocarNodo), deferred, nopass :: alocarNodo
-!    procedure(gen_alocarValor), deferred        :: alocarValor
-
-    procedure, nopass               :: desalocarNodo
-!    procedure(gen_desalocarValor), deferred     :: desalocarValor
+    procedure                       :: empilhar
+    procedure			            :: empilharPilhaSemOValor
 
     procedure                       :: paraCada
-    procedure                       :: remover
+    procedure                       :: desempilhar
+    procedure                       :: desalocarNodo
+    procedure                       :: desalocarValor
     procedure                       :: tamanho
     procedure 			            :: existeChave
 
@@ -164,57 +165,6 @@ module class_collection
     procedure                       :: redefinePrimeiro
 
   end type C_Colecao
-
-  abstract interface
-
-    subroutine gen_alocarNodo ( new )
-      import 		:: C_Colecao
-      class(C_Colecao), pointer, intent(inout)	:: new
-    end subroutine gen_alocarNodo
-
-    subroutine gen_defineValor (self, valor)
-      import 		:: C_Colecao
-      import 		:: C_Objecto
-      class(C_colecao)                    :: self
-      class(C_objecto), pointer     	  :: valor
-    end subroutine gen_defineValor
-
-    subroutine gen_obterValor (self, valor)
-      import 		:: C_Colecao
-      import 		:: C_Objecto
-      class(C_colecao)                              :: self
-      class(C_objecto), pointer, intent(out)        :: valor
-    end subroutine gen_obterValor
-
-    function gen_temValor (self) result(tem)
-      import 		:: C_Colecao
-      class(C_colecao)              :: self
-      logical                       :: tem
-    end function gen_temValor
-
-    subroutine gen_mostrarValor(self)
-      import 		:: C_Colecao
-      class(C_colecao)              :: self
-    end subroutine gen_mostrarValor
-
-    subroutine gen_adicionarValor (self, valor)
-      import 		:: C_Colecao
-      import 		:: C_Objecto
-      class(C_colecao)                                  :: self
-      class(C_objecto), pointer, intent(in)           	:: valor
-    end subroutine gen_adicionarValor
-
-    subroutine gen_alocarValor (self)
-      import 		:: C_Colecao
-      class(C_colecao)                                  :: self
-    end subroutine gen_alocarValor
-
-    subroutine gen_desalocarValor (self)
-      import 		:: C_Colecao
-      class(C_colecao)                                  :: self
-    end subroutine gen_desalocarValor
-
-  end interface
 
   !-------------end type C_Colecao-------------------------------------!
 
@@ -230,18 +180,18 @@ contains
     self%tipoObj = str
   end subroutine defineTipoObj
 
-  function obterTipoObj(self) result(str)
+  function obtemTipoObj(self) result(str)
     class(C_Objecto), intent(in)     :: self
     character(len=_OBJSTR_LENGTH)    :: str
     str = self%tipoObj
-  end function obterTipoObj
+  end function obtemTipoObj
 
-  subroutine mostrarTipoObj(self)
+  subroutine mostraTipoObj(self)
     class(C_Objecto)                    :: self
     character(len=_OBJSTR_LENGTH)       :: str
-    str = self%obterTipoObj()
-    write(*,*) 'Elemento do tipo ', trim( self%obterTipoObj() )
-  end subroutine mostrarTipoObj
+    str = self%obtemTipoObj()
+    write(*,*) 'Elemento do tipo ', trim( self%obtemTipoObj() )
+  end subroutine mostraTipoObj
 
   !----------------end of type-bound procedures of type C_Objecto-------!
 
@@ -261,11 +211,11 @@ contains
     endif
   end subroutine defineCategoria
 
-  function obterCategoria(self) result(acategoria)
+  function obtemCategoria(self) result(acategoria)
     class(C_Maca)                   :: self
     character(len=_OBJSTR_LENGTH)   :: acategoria
     acategoria = self%categoria
-  end function obterCategoria
+  end function obtemCategoria
 
   function temCategoria(self) result(tem)
     class(C_Maca)                   :: self
@@ -277,18 +227,54 @@ contains
     end if
   end function temCategoria
 
-  subroutine mostrarCategoria(self)
+  subroutine mostraCategoria(self)
     class(C_Maca)                   :: self
-    write(*,*) 'Maca de categoria ', trim( self%obterCategoria() )
-  end subroutine mostrarCategoria
+    write(*,*) 'Maca de categoria ', trim( self%obtemCategoria() )
+  end subroutine mostraCategoria
 
   !----------end type-bound procedures of type C_Maca-----------!
 
   !----------type-bound procedures of type C_Capsula------------!
 
-  subroutine nullProc()
+  subroutine defineGenero( self, strgenero )
+    class(C_Capsula)                    :: self
+    character(len=_STROBJ_LENGTH)       :: strgenero
+    if ( self%temGenero() )
+      write(*,*) 'A capsula ja foi utilizada pelo menos uma vez.'
+    self%strgenero = strgenero
+    select case ( strgenero )
+      case ('Objecto')
+        self%tem        => temObjecto
+        self%alocar     => alocarObjecto
+        self%desalocar  => desalocarObjecto
+        self%mostra    => mostraObjecto
+        call self%activaGenero()
+      case ('Maca')
+        self%tem        => temMaca
+        self%alocar     => alocarMaca
+        self%desalocar  => desalocarMaca
+        self%mostra    => mostraMaca
+        call self%activaGenero()
+      case ('indefinido')
+        call self%desactivaGenero
+    end select
+  end subroutine defineGenero
 
-  end subroutine nullProc
+  subroutine activaGenero( self )
+    class(C_Capsula)                    :: self
+    self%genero = .true.
+  end subroutine activaGenero
+
+  subroutine desactivaGenero( self )
+    class(C_Capsula)                    :: self
+    self%genero = .false.
+  end subroutine activaGenero
+
+  function temGenero( self ) result(tem)
+    class(C_Capsula)                    :: self
+    logical                             :: tem
+    tem = self%genero
+  end function temGenero
 
 #undef _VALOR_
 #define _VALOR_ Objecto
@@ -309,18 +295,16 @@ contains
     class(C_Colecao)                   :: self
     class(C_Colecao), pointer          :: ptr
     integer, optional                  :: id
-    character(len=_OBJSTR_LENGTH)      :: string = 'C_Colecao'
 
     if ( .not. self%temPrimeiro() ) then
       if ( present( id ) ) then
         call self%defineId( id )
       end if
-      call self%obterProprio( ptr )
+      call self%obtemProprio( ptr )
       call self%definePrimeiro( ptr )
       nullify( ptr )
       call self%defineSeguinte( ptr )
-      call self%defineTipoObj( string )
-      write(*,*) 'Criado item numero ', self%obterId()
+      write(*,*) 'Criado item numero ', self%obtemId()
     end if
 
   end subroutine iniciar
@@ -332,10 +316,10 @@ contains
     class(C_Colecao)              :: self
     class(C_Colecao), pointer     :: first
 
-    call self%obterPrimeiro(first)
+    call self%obtemPrimeiro(first)
 
     do while ( first%temSeguinte() )
-      call first%remover()
+      call first%desempilhar()
     end do
 
     write(*,*) 'Lista esvaziada.'
@@ -385,40 +369,40 @@ contains
   !as arguments. To get pointers it's  best to use
   !subroutine calls.
   !Regra: devido a limitacao do ifort12.0, usar subroutines
-  !para obter apontadores. Pode-se usar functions (que é melhor)
-  !para obter escalares.
+  !para obtem apontadores. Pode-se usar functions (que é melhor)
+  !para obtem escalares.
 
-  subroutine obterProprio(self, proprio)
+  subroutine obtemProprio(self, proprio)
     class(C_Colecao), target                    :: self
     class(C_Colecao), pointer, intent(out)      :: proprio
     proprio => self
-  end subroutine obterProprio
+  end subroutine obtemProprio
 
-  function obterId(self) result(id)
+  function obtemId(self) result(id)
     class(C_Colecao)              :: self
     integer                       :: id
     id = self%id
-  end function obterId
+  end function obtemId
 
-  function obterChave(self) result(chave)
+  function obtemChave(self) result(chave)
     class(C_Colecao)               :: self
     character(len=_OBJSTR_LENGTH)  :: chave
     chave = self%chave
-  end function obterChave
+  end function obtemChave
 
-  subroutine obterValor (self, valor)
+  subroutine obtemValor (self, valor)
     class(C_Colecao)                        :: self
     class(C_Capsula), pointer, intent(out)  :: valor
     valor => self%valor
-  end subroutine obterValor
+  end subroutine obtemValor
 
-  subroutine obterPrimeiro(self, primeiro)
+  subroutine obtemPrimeiro(self, primeiro)
     class(C_Colecao)                          :: self
     class(C_Colecao), pointer, intent(out)    :: primeiro
     primeiro => self%fundador
-  end subroutine obterPrimeiro
+  end subroutine obtemPrimeiro
 
-  subroutine obterSeguinte(self, seguinte)
+  subroutine obtemSeguinte(self, seguinte)
 
     class(C_Colecao)                        :: self
     class(C_Colecao), pointer, intent(out)  :: seguinte
@@ -429,7 +413,7 @@ contains
       nullify( seguinte )
     end if
 
-  end subroutine obterSeguinte
+  end subroutine obtemSeguinte
 
   !Has methods
 
@@ -496,67 +480,67 @@ contains
   end function temSeguinte
 
   !Show
-  subroutine mostrarId(self)
+  subroutine mostraId(self)
 
     class(C_Colecao)          :: self
     class(C_Colecao), pointer :: ptr
 
-    call self%obterAnterior(ptr)
+    call self%obtemAnterior(ptr)
 
     write(*,*) ' '
-    if ( self%obterId() .eq. ptr%obterId() ) then
+    if ( self%obtemId() .eq. ptr%obtemId() ) then
       write(*,*) 'O item e o fundador da lista da colecao.'
     else
-      write(*,*) 'O item anterior tem numero ', ptr%obterId()
+      write(*,*) 'O item anterior tem numero ', ptr%obtemId()
     end if
 
-    write(*,*) 'O numero do item e o ', self%obterId()
+    write(*,*) 'O numero do item e o ', self%obtemId()
 
-    call self%obterSeguinte(ptr)
+    call self%obtemSeguinte(ptr)
 
     if ( .not. self%temSeguinte() ) then
       write(*,*) 'O item e o ultimo da lista.'
     else
-      write(*,*) 'O item seguinte tem numero', ptr%obterId()
+      write(*,*) 'O item seguinte tem numero', ptr%obtemId()
     end if
 
-  end subroutine mostrarId
+  end subroutine mostraId
 
-  subroutine mostrarChave(self)
+  subroutine mostraChave(self)
     class(C_Colecao)                :: self
-    write(*,*) 'a chave é "', trim(self%obterChave()),'".'
-  end subroutine mostrarChave
+    write(*,*) 'a chave é "', trim(self%obtemChave()),'".'
+  end subroutine mostraChave
 
-  subroutine mostrarValor (self)
+  subroutine mostraValor (self)
     class(C_Colecao)                :: self
     class(C_Capsula), pointer       :: valor
-    call self%obterValor( valor )
-    call valor%mostrar()
-  end subroutine mostrarValor
+    call self%obtemValor( valor )
+    call valor%mostra()
+  end subroutine mostraValor
 
   !C_Colecao methods
 
-  subroutine mostrarNodo(self)
+  subroutine mostraNodo(self)
 
     class(C_Colecao)          :: self
 
-    call self%mostrarId()
+    call self%mostraId()
     if ( self%temChave() ) then
-      call self%mostrarChave()
+      call self%mostraChave()
     end if
     if ( self%temValor() ) then
-      call self%mostrarValor()
+      call self%mostraValor()
     end if
 
-  end subroutine mostrarNodo
+  end subroutine mostraNodo
 
-  subroutine mostrar(self)
+  subroutine mostra(self)
 
     class(C_Colecao)          :: self
     class(C_Colecao), pointer :: item => null()
 
     do while ( self%paraCada(item) )
-      call item%mostrarNodo()
+      call item%mostraNodo()
     end do
 
     write(*,*) ''
@@ -564,9 +548,9 @@ contains
     write(*,*) 'Lista mostrada.'
     write(*,*) ''
 
-  end subroutine mostrar
+  end subroutine mostra
 
-  subroutine adicionar(self, valor, chave)
+  subroutine empilhar(self, valor, chave)
 
     class(C_Colecao)                            :: self
     class(C_Capsule), pointer                   :: valor
@@ -574,25 +558,25 @@ contains
     class(C_Colecao), pointer                   :: nodo => null()
 
     if ( present( chave ) ) then
-      call self%adicionarNodo( chave = chave )
+      call self%empilharPilha( chave = chave )
     else
-      call self%adicionarNodo()
+      call self%empilharPilha()
     end if
 
-    call self%obterUltimo( nodo )
+    call self%obtemUltimo( nodo )
     if ( associated( valor ) ) then
       call nodo%defineValor( valor )
     else
-      write(*,*) 'Erro: a capsula a adicionar na pilha aponta para null()'
+      write(*,*) 'Erro: a capsula a empilhar na pilha aponta para null()'
     end if
 
-  end subroutine adicionar
+  end subroutine empilhar
 
-  subroutine adicionarNodo(self, nodo, chave)
+  subroutine empilharPilha(self, nodo, chave)
 
     class(C_Colecao)                                      :: self
     class(C_Colecao), pointer, intent(inout), optional    :: nodo
-    character(len=_OBJSTR_LENGTH), optional		          :: chave
+    character(len=_OBJSTR_LENGTH), optional		        :: chave
     class(C_Colecao), pointer                             :: ultimo, new => null(), primeiro
 
     if ( present( nodo ) ) then
@@ -612,20 +596,20 @@ contains
         if ( .not. self%temPrimeiro() ) then
           call self%definePrimeiro( nodo )
         else 
-          call self%obterUltimo( ultimo )
+          call self%obtemUltimo( ultimo )
           call ultimo%defineSeguinte( nodo )
-          call self%obterPrimeiro( primeiro )
+          call self%obtemPrimeiro( primeiro )
           call self%redefinePrimeiro( primeiro )
           call self%redefineId()
         endif
         
-        call self%obterUltimo( ultimo )
+        call self%obtemUltimo( ultimo )
         
-        if ( nodo%obterId() .ne. ultimo%obterId() ) then
-          write(*,*) 'Inserido item numero ', nodo%obterId() &
-                   , ' até ', ultimo%obterId()
+        if ( nodo%obtemId() .ne. ultimo%obtemId() ) then
+          write(*,*) 'Inserido item numero ', nodo%obtemId() &
+                   , ' até ', ultimo%obtemId()
         else
-          write(*,*) 'Inserido item numero ', nodo%obterId()
+          write(*,*) 'Inserido item numero ', nodo%obtemId()
         end if
 
         if ( present( chave ) ) then
@@ -634,7 +618,7 @@ contains
 
       else
 
-        write(*,*) 'Error in adicionarNodoSemOValor: Passed argument points to null().'
+        write(*,*) 'Error in empilharPilhaSemOValor: Passed argument points to null().'
 
       endif
 
@@ -646,22 +630,22 @@ contains
 
       else   
 
-        call self%obterPrimeiro(primeiro)
-        call self%obterUltimo(ultimo)
+        call self%obtemPrimeiro(primeiro)
+        call self%obtemUltimo(ultimo)
         call self%alocarNodo( new )
-        call new%defineId( ultimo%obterId() + 1 )
+        call new%defineId( ultimo%obtemId() + 1 )
         call new%definePrimeiro( primeiro )
         call ultimo%defineSeguinte( new )
         if ( present( chave ) ) then
 	  call new%defineChave(chave)
 	end if
-        write(*,*) 'Criado item numero ', new%obterId()
+        write(*,*) 'Criado item numero ', new%obtemId()
     
       end if
 
     end if
 
-  end subroutine adicionarNodo
+  end subroutine empilharPilha
 
   function paraCada(self, node, valor) result(keepup)
 
@@ -680,17 +664,17 @@ contains
 
       call self%alocarNodo( nodeZero )
       call nodeZero%defineId(0)
-      call self%obterPrimeiro( ptr )
+      call self%obtemPrimeiro( ptr )
       call nodeZero%definePrimeiro( ptr )
-!      call self%obterProprio( ptr )
+!      call self%obtemProprio( ptr )
       call nodeZero%defineSeguinte( ptr )
       node => nodeZero
 
     end if
 
     if ( node%temSeguinte() ) then
-      call node%obterSeguinte( node )
-      if ( present( valor ) ) call node%obterValor( valor )
+      call node%obtemSeguinte( node )
+      if ( present( valor ) ) call node%obtemValor( valor )
       keepup = .true.
     else
       nullify( node )
@@ -713,9 +697,9 @@ contains
     found = .false.
     if ( id .le. self%tamanho() ) then
       do while ( self%paraCada(item) )
-        if ( item%obterId() .eq. id ) then
+        if ( item%obtemId() .eq. id ) then
 	  found = .true.
-          call item%obterProprio( nodo )
+          call item%obtemProprio( nodo )
 	  write(*,*) ' '
 	  write(*,*) 'Encontrado o elemento da colecao com id ', id
         end if
@@ -726,22 +710,22 @@ contains
     end if
   end function procuraId
 
-  subroutine obterAnterior(self, anterior)
+  subroutine obtemAnterior(self, anterior)
 
     class(C_Colecao)                            :: self
-    class(C_Colecao), pointer, intent(out)      :: anterior   
+    class(C_Colecao), pointer, intent(out)      :: anterior
     class(C_Colecao), pointer                   :: seguinte
 
-    call self%obterPrimeiro(anterior)
+    call self%obtemPrimeiro(anterior)
 
-    if ( self%obterId() .ne. anterior%obterId() ) then
+    if ( self%obtemId() .ne. anterior%obtemId() ) then
 
-      call anterior%obterSeguinte(seguinte)
+      call anterior%obtemSeguinte(seguinte)
 
-      do while ( seguinte%obterId() .ne. self%obterId() )
+      do while ( seguinte%obtemId() .ne. self%obtemId() )
         if ( seguinte%temSeguinte() ) then
-          call anterior%obterSeguinte(anterior)
-          call seguinte%obterSeguinte(seguinte)
+          call anterior%obtemSeguinte(anterior)
+          call seguinte%obtemSeguinte(seguinte)
         else
           write(*,*) 'WARN 001: Nao foi encontrado o nodo anterior na colecao'
           write(*,*) 'C_Colecao corrompida.'
@@ -751,31 +735,31 @@ contains
 
     endif
 
-  end subroutine obterAnterior
+  end subroutine obtemAnterior
 
-  subroutine obterUltimo(self, ultimo)
+  subroutine obtemUltimo(self, ultimo)
 
     class(C_Colecao)                              :: self
     class(C_Colecao), pointer, intent(inout)      :: ultimo
 
-    call self%obterPrimeiro(ultimo)
+    call self%obtemPrimeiro(ultimo)
 
     do while ( ultimo%temSeguinte() )
-      call ultimo%obterSeguinte(ultimo)
+      call ultimo%obtemSeguinte(ultimo)
     end do
 
-  end subroutine obterUltimo
+  end subroutine obtemUltimo
 
 
-  subroutine remover(self)
+  subroutine desempilhar(self)
 
     class(C_Colecao)             :: self
     class(C_Colecao), pointer    :: ultimo, penultimo, ptr
 
-    call self%obterUltimo(ultimo)
-    call ultimo%obterAnterior(penultimo)
+    call self%obtemUltimo(ultimo)
+    call ultimo%obtemAnterior(penultimo)
 
-    if ( ultimo%obterId() .eq. penultimo%obterId() ) then
+    if ( ultimo%obtemId() .eq. penultimo%obtemId() ) then
       write(*,*) 'WARN: A lista contem apenas o seu elemento fundador.'
       write(*,*) 'Não se remove o elemento fundador da lista.'
       write(*,*) 'O elemento fundador so pode ser removido externamente.'
@@ -783,14 +767,23 @@ contains
       if ( ultimo%temValor() ) then
         call ultimo%desalocarValor()
       end if
-      write(*,*) 'Removido item numero ', ultimo%obterId()
+      write(*,*) 'Removido item numero ', ultimo%obtemId()
       call self%desalocarNodo( ultimo )
     endif
 
     nullify( ptr )
     call penultimo%defineSeguinte( ptr )
 
-  end subroutine remover
+  end subroutine desempilhar
+
+  subroutine desalocarValor( self )
+    class(C_Colecao)                :: self
+    class(C_Capsula), pointer       :: valor
+    if ( self%temValor() ) then
+      call self%obtemValor( valor )
+      call valor%desalocar()
+    end if
+  end subroutine desalocarValor
 
   function tamanho(self) result(tam)
 
@@ -863,11 +856,11 @@ contains
     found = .false.
     nullify( resultado )
     do while ( self%paraCada( item ) )
-      if ( trim(item%obterChave()) .eq. trim(chave) ) then
+      if ( trim(item%obtemChave()) .eq. trim(chave) ) then
 	found = .true.
-        call item%obterProprio( resultado )
+        call item%obtemProprio( resultado )
         write(*,*) ' '
-        write(*,*) 'Encontrada chave "', trim(chave), '" no elemento com id', item%obterId()
+        write(*,*) 'Encontrada chave "', trim(chave), '" no elemento com id', item%obtemId()
       end if
     end do
 
@@ -884,9 +877,9 @@ contains
   end subroutine desalocarNodo
 
   function procura(self, resultado, valor, id, chave) result(found)
-    class(C_Colecao)					:: self
-    class(C_Colecao), pointer, intent(out)      	:: resultado
-    class(C_Objecto), pointer, intent(out), optional	:: valor
+    class(C_Colecao)					                :: self
+    class(C_Colecao), pointer, intent(out)      	    :: resultado
+    class(C_Capsula), pointer, intent(out), optional    :: valor
     integer, optional					:: id
     character(len=_OBJSTR_LENGTH), optional		:: chave
     logical						:: found
@@ -901,7 +894,7 @@ contains
     endif
     if ( present( valor ) ) then
       if ( found ) then
-        call resultado%obterValor( valor )
+        call resultado%obtemValor( valor )
       else
         nullify( valor )
       endif
@@ -929,10 +922,11 @@ program unitTests_lista_colecao
   !Regra: as variáveis de type são da classe extendida
   !mas as variáveis apontadores de classe são da classe abstracta
 
-  type(C_Colecao_Maca)            :: caixa
-  class(C_Maca), pointer          :: maca => null()
-  class(C_Colecao), pointer       :: nodo => null()
-  integer                         :: i 
+  type(C_Colecao)                   :: caixa
+  class(C_Colecao), pointer         :: nodo => null()
+  class(C_Capsula), pointer         :: capsula => null()
+  class(C_Maca), pointer            :: maca => null()
+  integer                           :: i
 
   !Programa que demonstra as features da classe C_Colecao
   !programada no standard Fortran2003.
@@ -940,54 +934,59 @@ program unitTests_lista_colecao
   !da classe C_Objecto numa pilha com indentificativo crescente 
   !começando em 1.
   !Os metodos mais usuais dessa colecao são
-  ! - adicionar novos nodos à colecao ( no fim --> LIFO )
+  ! - empilhar novos nodos à colecao ( no fim --> LIFO )
   ! - procura por um nodo por identificativo ou por chave
   ! - extrair o objecto dum nodo
-  ! - mostrar toda a colecao ou mostrar um nodo da colecao
-  ! - remover um nodo ( o ultimo --> LIFO )
-  ! - remover todos os elementos da colecao menos o primeiro
+  ! - mostra toda a colecao ou mostra um nodo da colecao
+  ! - desempilhar um nodo ( o ultimo --> LIFO )
+  ! - desempilhar todos os elementos da colecao menos o primeiro
 
   !Cria e adiciona 2 elementos que guarda na colecao
   do i = 1, 2
-    call caixa%adicionar()
+    !maca -> intent(in), capsula -> intent(out)
+    call encapsula( maca, capsula)
+    call caixa%empilhar( capsula )
   end do
 
   !Cria e adiciona 1 elemento com uma chave associada.
-  call caixa%adicionar( chave = str('Maçã especial') )
+  !ideia: criar o reencapsula( maca, capsula) em que capsula(inout)
+  !conceito: desaloca a maca anterior e inclui uma nova na mesma capsula
+  call encapsula( maca, capsula)
+  call caixa%empilhar( capsula, chave = str('Maçã especial') )
 
   !Procura o elemento da colecao contendo aquela chave
   !e mostra elemento
   if ( caixa%procura( nodo, chave = str('Maçã especial') ) ) then
-    call nodo%mostrarNodo()
+    call nodo%mostraNodo()
   end if
 
   !Procura o elemento número 2 da lista,
   !extrai o valor e mostra
   if ( caixa%procura( nodo, id = 2 ) ) then
-    call nodo%obterValor( maca )
-    call maca%mostrarCategoria()
+    call nodo%obtemValor( capsula )
+    if ( desencapsula( capsula, maca ) ) maca%mostraCategoria()
   end if
 
   !Igual ao anterior: procura, extrai valor e mostra
-  if ( caixa%procura( nodo, valor = maca, id = 1 ) ) then
-    call maca%mostrarCategoria()
+  if ( caixa%procura( nodo, valor = capsula, id = 1 ) ) then
+    if ( desencapsula( capsula, maca ) ) maca%mostraCategoria()
   end if
 
   !Mostra toda a colecao de objectos
-  call caixa%mostrar()
+  call caixa%mostra()
 
   !Faz a mesma coisa mas
   !utiliza o ciclo "for each" da colecao.
   nullify( nodo )
   do while( caixa%paraCada( nodo ) )
-    call nodo%mostrarNodo( )
+    call nodo%mostraNodo( )
   enddo
 
   !Semelhante ao "for each" anterior
   !mas extrai o valor e mostra
   nullify( nodo )
-  do while( caixa%paraCada( nodo, valor = maca ) )
-    call maca%mostrarCategoria()
+  do while( caixa%paraCada( nodo, valor = capsula ) )
+    if ( desencapsula( capsula, maca ) ) maca%mostraCategoria()
   enddo
  
   !Remove todos os itens da colecao
@@ -995,7 +994,7 @@ program unitTests_lista_colecao
   call caixa%finalizar()
 
   !Mostra o item fundador da colecao
-  call caixa%mostrar()
+  call caixa%mostra()
 
   pause
 
