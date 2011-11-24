@@ -9,13 +9,6 @@ module class_capsule
 !       desencapsula
 !       reencapsula
 
-  !Regra 1: When using classes in fortran 2003, try considering that 'target' 
-  !is a forbidden directive, except in 'get', 'set' and 'has' methods.
-  !Regra 2: Encapsular em procedures os usos de 'associated' com retorno
-  !de resultado verdadeiro/falso.
-  !Regra 3: Para cada campo num tipo, tem que haver um metodo "defineCampo"
-  !e um metodo "obtemCampo".
-
   implicit none
 
   private
@@ -28,15 +21,11 @@ module class_capsule
  ! Regra 1: Cada variável derivada do tipo C_Objecto tem que ter
  ! o campo tipoObj inicializado com o nome do tipo.
   type, public :: C_Objecto
-
     character(len=_OBJSTR_LENGTH)       :: tipoObj = "C_Objecto"
-
   contains
- 
     procedure                           :: defineTipoObj
     procedure                           :: obtemTipoObj
     procedure                           :: mostraTipoObj
-
   end type C_Objecto
 
   !----------------end type C_Objecto------------------------------!
@@ -65,6 +54,12 @@ module class_capsule
     class(C_Objecto), pointer           :: Objecto => null()
     class(C_Maca), pointer              :: Maca => null()
 
+    !métodos que apontam para um genero de tipo ou de classe
+    procedure(alocaObjecto), pointer      :: aloca
+    procedure(desalocaObjecto), pointer   :: desaloca
+    procedure(temObjecto), pointer        :: tem
+    procedure(mostraObjecto), pointer     :: mostra
+
   contains
 
     !metodos do identificativo do genero
@@ -72,18 +67,31 @@ module class_capsule
     procedure                             :: obtemGenero
     procedure                             :: temGenero
     procedure                             :: mostraGenero
+    procedure				  :: limpaGenero
 
     !metodos que abrangem todos os generos
     procedure                             :: limpaCapsula
     procedure                             :: mostraCapsula
 
-    !métodos que apontam para um genero de tipo ou de classe
-    procedure(alocaObjecto), pointer      :: aloca
-    procedure(desalocaObjecto), pointer   :: desaloca
-    procedure(temObjecto), pointer        :: tem
-    procedure(mostraObjecto), pointer     :: mostra
-
   end type C_Capsula
+
+  public :: encapsula
+  interface encapsula
+    module procedure encapsulaObjecto
+    module procedure encapsulaMaca
+  end interface encapsula
+
+  public :: reencapsula
+  interface reencapsula
+    module procedure reencapsulaObjecto
+    module procedure reencapsulaMaca
+  end interface reencapsula
+
+  public :: desencapsula
+  interface desencapsula
+    module procedure desencapsulaObjecto
+    module procedure desencapsulaMaca
+  end interface desencapsula
 
   !-------------end type C_Capsula-----------------------------!
 
@@ -157,7 +165,7 @@ contains
 
   subroutine defineGenero( self, strgenero )
     class(C_Capsula)                    :: self
-    character(len=_STROBJ_LENGTH)       :: strgenero
+    character(len=_OBJSTR_LENGTH)       :: strgenero
     select case ( strgenero )
       case ('Objecto')
         self%tem        => temObjecto
@@ -170,19 +178,19 @@ contains
         self%desaloca   => desalocaMaca
         self%mostra     => mostraMaca
     end select
-    call self%defineGenero( strgenero )
+    self%genero = strgenero
   end subroutine defineGenero
 
   subroutine obtemGenero( self, strgenero )
     class(C_Capsula)                    :: self
-    character(len=_STROBJ_LENGTH)       :: strgenero
+    character(len=_OBJSTR_LENGTH)       :: strgenero
     strgenero = self%genero
   end subroutine obtemGenero
 
   function temGenero( self ) result(tem)
     class(C_Capsula)                    :: self
     logical                             :: tem
-    character(len=_STROBJ_LENGTH)       :: strgenero
+    character(len=_OBJSTR_LENGTH)       :: strgenero
     call self%obtemGenero( strgenero )
     if ( trim(strgenero) .eq. 'indefinido' ) then
       tem = .false.
@@ -191,12 +199,43 @@ contains
     end if
   end function temGenero
 
-  subroutine mostraGenero( self )
-    class(C_Capsula)                    :: self
-    character(len=_STROBJ_LENGTH)       :: strgenero
-    call self%obtemGenero( strgenero )
-    write(*,*) 'O presente genero da capsula é ', trim(strgenero)
+  subroutine mostraGenero( self, strgenero )
+    class(C_Capsula)                    	:: self
+    character(len=_OBJSTR_LENGTH), optional     :: strgenero
+    character(len=_OBJSTR_LENGTH)		:: origenero
+    call self%obtemGenero( origenero )
+    if ( present(strgenero) ) then
+      call self%defineGenero( strgenero )
+      call self%mostra()
+      call self%defineGenero( origenero )
+    else
+        write(*,*) 'O presente genero da capsula e ', trim(origenero)
+    end if
   end subroutine mostraGenero
+
+  subroutine limpaGenero( self, strgenero )
+    class(C_Capsula)			:: self
+    character(len=_OBJSTR_LENGTH)	:: strgenero
+    character(len=_OBJSTR_LENGTH)	:: stroriginal
+    call self%obtemGenero( stroriginal )
+    call self%defineGenero( strgenero )
+    if ( self%tem() ) call self%desaloca()
+    call self%defineGenero( stroriginal )
+  end subroutine limpaGenero
+
+  subroutine limpaCapsula ( self )
+    class(C_Capsula)			:: self
+    call self%limpaGenero( Str('Objecto') )
+    call self%limpaGenero( Str('Maca') )
+    call self%limpaGenero( Str('Indefinido') )
+  end subroutine limpaCapsula
+
+  subroutine mostraCapsula ( self )
+    class(C_Capsula)			:: self
+    call self%mostraGenero( Str('Objecto') )
+    call self%mostraGenero( Str('Maca') )
+    call self%mostraGenero( Str('Indefinido') )
+  end subroutine mostraCapsula  
 
 #undef _VALOR_
 #define _VALOR_ Objecto
@@ -228,8 +267,8 @@ program unitTests_capsula
   !mas as variáveis apontadores de classe são da classe abstracta
 
   class(C_Capsula), pointer         :: capsula => null()
-  class(C_Maca), pointer            :: maca => null()
-  class(C_Objecto), pointer         :: objecto => null()
+  type(C_Maca), pointer             :: maca => null()
+  type(C_Objecto), pointer          :: objecto => null()
   integer                           :: i
 
   !conceito: aloca uma nova maca dentro duma nova capsula
@@ -240,34 +279,45 @@ program unitTests_capsula
   call capsula%mostraGenero()
 
   !conceito: desaloca a maca da capsula e desaloca a capsula
+  write(*,*) 'A'
   call capsula%desaloca()
+  write(*,*) 'B'
   deallocate ( capsula )
+  write(*,*) 'C'
   nullify( capsula )
+  write(*,*) 'D'
 
   !conceito: aloca uma nova maca dentro duma nova capsula
   !e muda o genero da capsula para 'maca'
   call encapsula( maca, capsula )
+  write(*,*) 'E'
 
   !conceito: desaloca a maca e aloca uma nova maca dentro da mesma capsula
   call reencapsula( maca, capsula )
+  write(*,*) 'F'
 
   !conceito: desaloca a maca e insere a nova maca dentro da mesma capsula
   allocate( maca )
+  write(*,*) 'G'
   call reencapsula( maca, capsula )
+  write(*,*) 'H'
   nullify( maca )
+  write(*,*) 'I'
 
   !conceito: aloca um novo objecto dentro da mesma capsula
   !e muda o genero da capsula para 'objecto'
   call reencapsula( objecto, capsula )
+  write(*,*) 'J'
 
   !conceito: mostra o conteudo da capsula
   !preservando o genero actual ('objecto')
   call capsula%mostraCapsula()
+  write(*,*) 'K'
 
   !conceito: desencapsula e mostra a maca e o objecto
   !mudando o genero da capsula em conformidade em caso de sucesso
-  if ( desencapsula( capsula, maca ) ) maca%mostraCategoria()
-  if ( desencapsula( capsula, objecto ) ) objecto%mostraTipoObj()
+  if ( desencapsula( capsula, maca ) ) call maca%mostraCategoria()
+  if ( desencapsula( capsula, objecto ) ) call objecto%mostraTipoObj()
 
   !conceito: limpa a capsula do seu conteudo
   !e muda o seu genero para 'indefinido'
