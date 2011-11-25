@@ -16,7 +16,7 @@ module class_capsule
  ! Os tipos Objecto e Maca são exemplos de objectos que podem
  ! encapsulados e colocados numa pilha (C_Colecao).
 
- !----------------------type C_Objecto------------------------------!
+ !----------------------class C_Objecto------------------------------!
 
  ! Regra 1: Cada variável derivada do tipo C_Objecto tem que ter
  ! o campo tipoObj inicializado com o nome do tipo.
@@ -28,9 +28,9 @@ module class_capsule
     procedure                           :: mostraTipoObj
   end type C_Objecto
 
-  !----------------end type C_Objecto------------------------------!
+  !----------------end class C_Objecto------------------------------!
 
-  !----------------type C_Maca------------------------------!
+  !----------------class C_Maca------------------------------!
 
   type, public, extends(C_Objecto)      :: C_Maca
     character(len=_OBJSTR_LENGTH)       :: categoria = "Categoria Indefinida"
@@ -41,12 +41,12 @@ module class_capsule
     procedure                           :: mostraCategoria
   end type C_Maca
 
-  !-------------end type C_Maca-----------------------------!
+  !-------------end class C_Maca-----------------------------!
 
   ! Os tipos C_Capsula e C_Colecao sao os tipos importantes
   ! deste modulo.
 
-  !----------------type C_Capsula------------------------------!
+  !----------------class C_Capsula------------------------------!
 
   type, public                          :: C_Capsula
 
@@ -93,13 +93,13 @@ module class_capsule
     module procedure desencapsulaMaca
   end interface desencapsula
 
-  !-------------end type C_Capsula-----------------------------!
+  !-------------end class C_Capsula-----------------------------!
 
   public                :: str
 
 contains
 
-  !----------------type-bound procedures of type C_Objecto--------------!
+  !----------------class-bound procedures of class C_Objecto--------------!
 
   subroutine defineTipoObj(self, str)
     class(C_Objecto)                 :: self
@@ -120,9 +120,9 @@ contains
     write(*,*) 'Elemento do tipo ', trim( self%obtemTipoObj() )
   end subroutine mostraTipoObj
 
-  !----------------end of type-bound procedures of type C_Objecto-------!
+  !----------------end of class-bound procedures of class C_Objecto-------!
 
-  !----------type-bound procedures of type C_Maca---------------!
+  !----------class-bound procedures of class C_Maca---------------!
 
   subroutine defineCategoria(self, tipo)
     class(C_Maca)                   :: self
@@ -159,9 +159,9 @@ contains
     write(*,*) 'Maca de categoria ', trim( self%obtemCategoria() )
   end subroutine mostraCategoria
 
-  !----------end type-bound procedures of type C_Maca-----------!
+  !----------end class-bound procedures of class C_Maca-----------!
 
-  !----------type-bound and pointer procedures of type C_Capsula------------!
+  !----------class-bound and pointer procedures of class C_Capsula------------!
 
   subroutine defineGenero( self, strgenero )
     class(C_Capsula)                    :: self
@@ -177,6 +177,11 @@ contains
         self%aloca      => alocaMaca
         self%desaloca   => desalocaMaca
         self%mostra     => mostraMaca
+      case default
+        nullify( self%tem )
+        nullify( self%aloca )
+        nullify( self%desaloca )
+        nullify( self%mostra )
     end select
     self%genero = strgenero
   end subroutine defineGenero
@@ -206,7 +211,7 @@ contains
     call self%obtemGenero( origenero )
     if ( present(strgenero) ) then
       call self%defineGenero( strgenero )
-      call self%mostra()
+      if ( associated ( self%mostra ) ) call self%mostra()
       call self%defineGenero( origenero )
     else
         write(*,*) 'O presente genero da capsula e ', trim(origenero)
@@ -219,7 +224,9 @@ contains
     character(len=_OBJSTR_LENGTH)	:: stroriginal
     call self%obtemGenero( stroriginal )
     call self%defineGenero( strgenero )
-    if ( self%tem() ) call self%desaloca()
+    if ( associated ( self%tem ) ) then
+      if ( self%tem() ) call self%desaloca()
+    end if
     call self%defineGenero( stroriginal )
   end subroutine limpaGenero
 
@@ -245,7 +252,7 @@ contains
 #define _VALOR_ Maca
 #include "C_Capsula_contains.inc"
 
-  !-----end type-bound and pointer procedures of type C_Capsula--------!
+  !-----end class-bound and pointer procedures of class C_Capsula--------!
 
   function str(inStr) result(sizedStr)
     character(len=*), intent(in)        :: inStr
@@ -263,12 +270,12 @@ program unitTests_capsula
 
   implicit none
 
-  !Regra: as variáveis de type são da classe extendida
+  !Regra: as variáveis de class são da classe extendida
   !mas as variáveis apontadores de classe são da classe abstracta
 
   class(C_Capsula), pointer         :: capsula => null()
-  type(C_Maca), pointer             :: maca => null()
-  type(C_Objecto), pointer          :: objecto => null()
+  class(C_Maca), pointer            :: maca => null()
+  class(C_Objecto), pointer         :: objecto => null()
   integer                           :: i
 
   !conceito: aloca uma nova maca dentro duma nova capsula
@@ -278,47 +285,46 @@ program unitTests_capsula
   !resposta: 'Maca'
   call capsula%mostraGenero()
 
-  !conceito: desaloca a maca da capsula e desaloca a capsula
-  write(*,*) 'A'
-  call capsula%desaloca()
-  write(*,*) 'B'
-  deallocate ( capsula )
-  write(*,*) 'C'
-  nullify( capsula )
-  write(*,*) 'D'
+  if ( desencapsula( capsula, maca ) ) call maca%mostraCategoria()
 
+  !conceito: desaloca a maca da capsula e desaloca a capsula
+  call capsula%desaloca()
+  deallocate ( capsula )
+  nullify( capsula )
+
+  !Assim que o apontador para maca for utilizado, e melhor
+  !nulificar. Sobretudo se foi alocado de dentro da classe capsula.
+  nullify( maca )
   !conceito: aloca uma nova maca dentro duma nova capsula
   !e muda o genero da capsula para 'maca'
   call encapsula( maca, capsula )
-  write(*,*) 'E'
 
   !conceito: desaloca a maca e aloca uma nova maca dentro da mesma capsula
   call reencapsula( maca, capsula )
-  write(*,*) 'F'
 
   !conceito: desaloca a maca e insere a nova maca dentro da mesma capsula
   allocate( maca )
-  write(*,*) 'G'
   call reencapsula( maca, capsula )
-  write(*,*) 'H'
   nullify( maca )
-  write(*,*) 'I'
 
   !conceito: aloca um novo objecto dentro da mesma capsula
   !e muda o genero da capsula para 'objecto'
   call reencapsula( objecto, capsula )
-  write(*,*) 'J'
 
   !conceito: mostra o conteudo da capsula
   !preservando o genero actual ('objecto')
   call capsula%mostraCapsula()
-  write(*,*) 'K'
 
   !conceito: desencapsula e mostra a maca e o objecto
   !mudando o genero da capsula em conformidade em caso de sucesso
   if ( desencapsula( capsula, maca ) ) call maca%mostraCategoria()
   if ( desencapsula( capsula, objecto ) ) call objecto%mostraTipoObj()
 
+  !a maca da capsula nao foi deallocada com sucesso
+  !e foi apenas nullificada. Para desalocar a maca
+  !com sucesso e necessario usar o apontador original
+  !que fez a alocacao.
+!  deallocate( maca )
   !conceito: limpa a capsula do seu conteudo
   !e muda o seu genero para 'indefinido'
   call capsula%limpaCapsula()
