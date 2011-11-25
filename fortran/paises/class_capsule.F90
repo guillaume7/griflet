@@ -320,11 +320,6 @@ program unitTests_capsula
   if ( desencapsula( capsula, maca ) ) call maca%mostraCategoria()
   if ( desencapsula( capsula, objecto ) ) call objecto%mostraTipoObj()
 
-  !a maca da capsula nao foi deallocada com sucesso
-  !e foi apenas nullificada. Para desalocar a maca
-  !com sucesso e necessario usar o apontador original
-  !que fez a alocacao.
-!  deallocate( maca )
   !conceito: limpa a capsula do seu conteudo
   !e muda o seu genero para 'indefinido'
   call capsula%limpaCapsula()
