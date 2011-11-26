@@ -1,5 +1,8 @@
 module class_capsule
 
+  !AQUI
+  !use class_something
+
 #ifndef _OBJSTR_LENGTH
 #define _OBJSTR_LENGTH 128
 #endif
@@ -51,8 +54,11 @@ module class_capsule
   type, public                          :: C_Capsula
 
     character(len=_OBJSTR_LENGTH)       :: genero = "indefinido"
+    
+    !AQUI
     class(C_Objecto), pointer           :: Objecto => null()
     class(C_Maca), pointer              :: Maca => null()
+    !class(C_Something), pointer	:: Something => null()
 
     !métodos que apontam para um genero de tipo ou de classe
     procedure(alocaObjecto), pointer      :: aloca
@@ -75,22 +81,28 @@ module class_capsule
 
   end type C_Capsula
 
+  !AQUI
   public :: encapsula
   interface encapsula
     module procedure encapsulaObjecto
     module procedure encapsulaMaca
+    !module procedure encapsulaSomething
   end interface encapsula
 
+  !AQUI
   public :: reencapsula
   interface reencapsula
     module procedure reencapsulaObjecto
     module procedure reencapsulaMaca
+    !module procedure reencapsulaSomething
   end interface reencapsula
 
+  !AQUI
   public :: desencapsula
   interface desencapsula
     module procedure desencapsulaObjecto
     module procedure desencapsulaMaca
+    !module procedure desencapsulaSomething
   end interface desencapsula
 
   !-------------end class C_Capsula-----------------------------!
@@ -163,6 +175,7 @@ contains
 
   !----------class-bound and pointer procedures of class C_Capsula------------!
 
+  !AQUI
   subroutine defineGenero( self, strgenero )
     class(C_Capsula)                    :: self
     character(len=_OBJSTR_LENGTH)       :: strgenero
@@ -177,6 +190,11 @@ contains
         self%aloca      => alocaMaca
         self%desaloca   => desalocaMaca
         self%mostra     => mostraMaca
+      !case ('Something')
+      !  self%tem        => temSomething
+      !  self%aloca      => alocaSomething
+      !  self%desaloca   => desalocaSomething
+      !  self%mostra     => mostraSomething
       case default
         nullify( self%tem )
         nullify( self%aloca )
@@ -230,20 +248,25 @@ contains
     call self%defineGenero( stroriginal )
   end subroutine limpaGenero
 
+  !AQUI
   subroutine limpaCapsula ( self )
     class(C_Capsula)			:: self
     call self%limpaGenero( Str('Objecto') )
     call self%limpaGenero( Str('Maca') )
+    !call self%limpaGenero( Str('Something') )
     call self%limpaGenero( Str('Indefinido') )
   end subroutine limpaCapsula
 
+  !AQUI
   subroutine mostraCapsula ( self )
     class(C_Capsula)			:: self
     call self%mostraGenero( Str('Objecto') )
     call self%mostraGenero( Str('Maca') )
+    !call self%mostraGenero( Str('Something') )
     call self%mostraGenero( Str('Indefinido') )
   end subroutine mostraCapsula  
 
+!AQUI
 #undef _VALOR_
 #define _VALOR_ Objecto
 #include "C_Capsula_contains.inc"
@@ -251,6 +274,10 @@ contains
 #undef _VALOR_
 #define _VALOR_ Maca
 #include "C_Capsula_contains.inc"
+
+!#undef _VALOR_
+!#define _VALOR_ Something
+!#include "C_Capsula_contains.inc"
 
   !-----end class-bound and pointer procedures of class C_Capsula--------!
 
