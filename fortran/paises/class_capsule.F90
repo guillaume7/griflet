@@ -264,6 +264,7 @@ end module class_capsule
 
 !------------------ Program -----------------------------!
 
+#ifndef _MODULE_
 program unitTests_capsula
 
   use class_capsule
@@ -327,3 +328,4 @@ program unitTests_capsula
   pause
 
 end program unitTests_capsula
+#endif

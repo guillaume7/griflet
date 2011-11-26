@@ -17,9 +17,7 @@ module class_collection
 ! 2b- Refactorizar tudo: Para qualquer tipo genérico "apple", "banana" ...
 !       ... existe um apontador para null na classe C_Capsula.
 !       O campo "valor" da classe C_Colecao é um apontador
-!       para null do tipo C_Capsula.
-!       Existem extensoes opcionais da classe C_Colecao
-!       denominadas "C_Colecao_apple", "C_Colecao_banana", ...
+!       para null do tipo C_Capsula. DONE!!
 ! 3 - Fazer programa com arrays e com directivas openmp,
 !     pensar numa alternativa ao do while( paraCada() )
 !     para criar uma zona paralelizada segura ( threadSafe ).
@@ -29,7 +27,9 @@ module class_collection
   !Regra 2: Encapsular em procedures os usos de 'associated' com retorno
   !de resultado verdadeiro/falso.
   !Regra 3: Para cada campo num tipo, tem que haver um metodo "defineCampo"
-  !e um metodo "obtemCampo".
+  !e um metodo "obtemCampo", assim como um "temCampo" e um "mostraCampo".
+  !Adicionalmente, se o campo for de tipo "pointer", convem haver um metodo "alocaCampo"
+  !e um metodo "desalocaCampo".
 
   implicit none
 
@@ -48,9 +48,9 @@ module class_collection
   contains
 
     !Constructors
-    procedure                       :: iniciar
+    procedure                       :: inicializa
     !Destructors
-    procedure                       :: finalizar
+    procedure                       :: finaliza
     !Sets
     procedure                       :: defineId
     procedure                       :: defineChave
@@ -82,16 +82,16 @@ module class_collection
     procedure                       :: mostra
     procedure                       :: mostraNodo
 
-    procedure                       :: empilhar
-    procedure			            :: empilharPilha
+    procedure                       :: empilha
+    procedure			    :: empilhaPilha
 
     procedure                       :: paraCada
-    procedure                       :: desempilhar
-    procedure, nopass               :: alocarNodo
-    procedure, nopass               :: desalocarNodo
-    procedure                       :: desalocarValor
+    procedure                       :: desempilha
+    procedure, nopass               :: alocaNodo
+    procedure, nopass               :: desalocaNodo
+    procedure                       :: desalocaValor
     procedure                       :: tamanho
-    procedure 			            :: existeChave
+    procedure 			    :: existeChave
 
     procedure                       :: procura
     procedure                       :: procuraId
@@ -110,7 +110,7 @@ contains
 
   !Constructors
 
-  subroutine iniciar(self, id)
+  subroutine inicializa(self, id)
 
     class(C_Colecao)                   :: self
     class(C_Colecao), pointer          :: ptr
@@ -127,11 +127,11 @@ contains
       write(*,*) 'Criado item numero ', self%obtemId()
     end if
 
-  end subroutine iniciar
+  end subroutine inicializa
 
   !Destructors
 
-  subroutine finalizar(self)
+  subroutine finaliza(self)
 
     class(C_Colecao)              :: self
     class(C_Colecao), pointer     :: first
@@ -139,13 +139,13 @@ contains
     call self%obtemPrimeiro(first)
 
     do while ( first%temSeguinte() )
-      call first%desempilhar()
+      call first%desempilha()
     end do
 
     write(*,*) 'Lista esvaziada.'
     write(*,*) ''
 
-  end subroutine finalizar
+  end subroutine finaliza
 
   !Sets
 
@@ -370,7 +370,7 @@ contains
 
   end subroutine mostra
 
-  subroutine empilhar(self, valor, chave)
+  subroutine empilha(self, valor, chave)
 
     class(C_Colecao)                            :: self
     class(C_Capsula), pointer                   :: valor
@@ -378,21 +378,21 @@ contains
     class(C_Colecao), pointer                   :: nodo => null()
 
     if ( present( chave ) ) then
-      call self%empilharPilha( chave = chave )
+      call self%empilhaPilha( chave = chave )
     else
-      call self%empilharPilha()
+      call self%empilhaPilha()
     end if
 
     call self%obtemUltimo( nodo )
     if ( associated( valor ) ) then
       call nodo%defineValor( valor )
     else
-      write(*,*) 'Erro: a capsula a empilhar na pilha aponta para null()'
+      write(*,*) 'Erro: a capsula a empilha na pilha aponta para null()'
     end if
 
-  end subroutine empilhar
+  end subroutine empilha
 
-  subroutine empilharPilha(self, nodo, chave)
+  subroutine empilhaPilha(self, nodo, chave)
 
     class(C_Colecao)                                      :: self
     class(C_Colecao), pointer, intent(inout), optional    :: nodo
@@ -410,7 +410,7 @@ contains
         ! e redefineIdr os ids.
 
         if ( .not. nodo%temPrimeiro() ) then
-          call nodo%iniciar( 1 )
+          call nodo%inicializa( 1 )
         endif
 
         if ( .not. self%temPrimeiro() ) then
@@ -438,7 +438,7 @@ contains
 
       else
 
-        write(*,*) 'Error in empilharPilha: Passed argument points to null().'
+        write(*,*) 'Error in empilhaPilha: Passed argument points to null().'
 
       endif
 
@@ -446,13 +446,13 @@ contains
 
       if ( .not. self%temPrimeiro() ) then
 
-        call self%iniciar( 1 )
+        call self%inicializa( 1 )
 
       else   
 
         call self%obtemPrimeiro(primeiro)
         call self%obtemUltimo(ultimo)
-        call self%alocarNodo( new )
+        call self%alocaNodo( new )
         call new%defineId( ultimo%obtemId() + 1 )
         call new%definePrimeiro( primeiro )
         call ultimo%defineSeguinte( new )
@@ -465,7 +465,7 @@ contains
 
     end if
 
-  end subroutine empilharPilha
+  end subroutine empilhaPilha
 
   function paraCada(self, node, valor) result(keepup)
 
@@ -482,7 +482,7 @@ contains
 
     if ( .not. associated( node ) ) then
 
-      call self%alocarNodo( nodeZero )
+      call self%alocaNodo( nodeZero )
       call nodeZero%defineId(0)
       call self%obtemPrimeiro( ptr )
       call nodeZero%definePrimeiro( ptr )
@@ -503,7 +503,7 @@ contains
     end if
 
     if ( associated( nodeZero ) ) then
-      call self%desalocarNodo( nodeZero ) 
+      call self%desalocaNodo( nodeZero ) 
     end if
 
   end function paraCada
@@ -571,7 +571,7 @@ contains
   end subroutine obtemUltimo
 
 
-  subroutine desempilhar(self)
+  subroutine desempilha(self)
 
     class(C_Colecao)             :: self
     class(C_Colecao), pointer    :: ultimo, penultimo, ptr
@@ -585,25 +585,27 @@ contains
       write(*,*) 'O elemento fundador so pode ser removido externamente.'
     else
       if ( ultimo%temValor() ) then
-        call ultimo%desalocarValor()
+        call ultimo%desalocaValor()
       end if
       write(*,*) 'Removido item numero ', ultimo%obtemId()
-      call self%desalocarNodo( ultimo )
+      call self%desalocaNodo( ultimo )
     endif
 
     nullify( ptr )
     call penultimo%defineSeguinte( ptr )
 
-  end subroutine desempilhar
+  end subroutine desempilha
 
-  subroutine desalocarValor( self )
+  subroutine desalocaValor( self )
     class(C_Colecao)                :: self
     class(C_Capsula), pointer       :: valor
     if ( self%temValor() ) then
       call self%obtemValor( valor )
       call valor%limpaCapsula()
+      deallocate( valor )
+      nullify( self%valor )
     end if
-  end subroutine desalocarValor
+  end subroutine desalocaValor
 
   function tamanho(self) result(tam)
 
@@ -686,15 +688,24 @@ contains
 
   end function procuraChave
 
-  subroutine desalocarNodo ( ptr ) !nopass
+  subroutine alocaNodo ( ptr ) !nopass
+    class(C_Colecao), pointer, intent(inout)	:: ptr
+    if ( associated( ptr ) ) then
+      nullify( ptr )
+      write(*,*) 'Warning: alocaNodo - argument is already associated. Nullifying ...'
+    end if
+    allocate( ptr )
+  end subroutine alocaNodo
+
+  subroutine desalocaNodo ( ptr ) !nopass
     class(C_Colecao), pointer, intent(inout)	:: ptr
     if ( associated( ptr ) ) then
       deallocate( ptr )
       nullify( ptr )
     else
-      write(*,*) 'Warning: desalocarNodo - argument already points to null.'
+      write(*,*) 'Warning: desalocaNodo - argument already points to null.'
     endif
-  end subroutine desalocarNodo
+  end subroutine desalocaNodo
 
   function procura(self, resultado, valor, id, chave) result(found)
     class(C_Colecao)					                :: self
@@ -738,9 +749,10 @@ program unitTests_lista_colecao
   !mas as variáveis apontadores de classe são da classe abstracta
 
   type(C_Colecao)                   :: caixa
-  class(C_Colecao), pointer         :: nodo => null()
-  class(C_Capsula), pointer         :: capsula => null()
-  class(C_Maca), pointer            :: maca => null()
+  class(C_Colecao), pointer         :: nodo => null( )
+  class(C_Capsula), pointer         :: capsula => null( )
+  class(C_Maca), pointer            :: maca => null( )
+  class(C_Objecto), pointer	    :: objecto => null( )
   integer                           :: i
 
   !Programa que demonstra as features da classe C_Colecao
@@ -749,46 +761,48 @@ program unitTests_lista_colecao
   !da classe C_Objecto numa pilha com indentificativo crescente 
   !começando em 1.
   !Os metodos mais usuais dessa colecao são
-  ! - empilhar novos nodos à colecao ( no fim --> LIFO )
+  ! - empilha novos nodos à colecao ( no fim --> LIFO )
   ! - procura por um nodo por identificativo ou por chave
   ! - extrair o objecto dum nodo
   ! - mostra toda a colecao ou mostra um nodo da colecao
-  ! - desempilhar um nodo ( o ultimo --> LIFO )
-  ! - desempilhar todos os elementos da colecao menos o primeiro
+  ! - desempilha um nodo ( o ultimo --> LIFO )
+  ! - desempilha todos os elementos da colecao menos o primeiro
 
   !Cria e adiciona 2 elementos que guarda na colecao
   do i = 1, 2
     !maca -> intent(in), capsula -> intent(out)
-    call encapsula( maca, capsula)
-    call caixa%empilhar( capsula )
+    call encapsula( maca, capsula )
+    call caixa%empilha( capsula )
   end do
 
   !Cria e adiciona 1 elemento com uma chave associada.
-  !ideia: criar o reencapsula( maca, capsula) em que capsula(inout)
-  !conceito: desaloca a maca anterior e inclui uma nova na mesma capsula
-  call encapsula( maca, capsula)
-  call caixa%empilhar( capsula, chave = str('Maçã especial') )
+  call encapsula( maca, capsula )
+  call caixa%empilha( capsula, chave = str('Maçã especial') )
 
   !Procura o elemento da colecao contendo aquela chave
   !e mostra elemento
   if ( caixa%procura( nodo, chave = str('Maçã especial') ) ) then
-    call nodo%mostraNodo()
+    call nodo%mostraNodo( )
   end if
 
   !Procura o elemento número 2 da lista,
   !extrai o valor e mostra
   if ( caixa%procura( nodo, id = 2 ) ) then
     call nodo%obtemValor( capsula )
-    if ( desencapsula( capsula, maca ) ) maca%mostraCategoria()
+    if ( desencapsula( capsula, maca ) ) call maca%mostraCategoria( )
   end if
 
   !Igual ao anterior: procura, extrai valor e mostra
   if ( caixa%procura( nodo, valor = capsula, id = 1 ) ) then
-    if ( desencapsula( capsula, maca ) ) maca%mostraCategoria()
+    if ( desencapsula( capsula, maca ) ) call maca%mostraCategoria( )
   end if
 
+  !Encapsula um novo outro tipo de objecto numa nova capsula e empilha na mesma caixa
+  call encapsula( objecto, capsula )
+  call caixa%empilha( capsula, chave = str('Determinado e particular objecto') )
+
   !Mostra toda a colecao de objectos
-  call caixa%mostra()
+  call caixa%mostra( )
 
   !Faz a mesma coisa mas
   !utiliza o ciclo "for each" da colecao.
@@ -801,15 +815,16 @@ program unitTests_lista_colecao
   !mas extrai o valor e mostra
   nullify( nodo )
   do while( caixa%paraCada( nodo, valor = capsula ) )
-    if ( desencapsula( capsula, maca ) ) maca%mostraCategoria()
+    if ( desencapsula( capsula, maca ) ) call maca%mostraCategoria()    
+    if ( desencapsula( capsula, objecto ) ) call objecto%mostraTipoObj()    
   enddo
  
   !Remove todos os itens da colecao
   !(excepto o item fundador da colecao)
-  call caixa%finalizar()
+  call caixa%finaliza( )
 
   !Mostra o item fundador da colecao
-  call caixa%mostra()
+  call caixa%mostra( )
 
   pause
 
