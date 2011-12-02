@@ -83,7 +83,7 @@ module class_collection
     procedure                       :: mostraNodo
 
     procedure                       :: empilha
-    procedure			    :: empilhaPilha
+    procedure			            :: empilhaPilha
 
     procedure                       :: paraCada
     procedure                       :: desempilha
@@ -91,7 +91,7 @@ module class_collection
     procedure, nopass               :: desalocaNodo
     procedure                       :: desalocaValor
     procedure                       :: tamanho
-    procedure 			    :: existeChave
+    procedure 			            :: existeChave
 
     procedure                       :: procura
     procedure                       :: procuraId
