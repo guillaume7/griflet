@@ -531,6 +531,18 @@ program unitTests_lista_colecao
 
   type(_C_COLECAO)       :: lista
 
+  !< Testing some basic stuff on allocatables vs pointers !<
+  
+  real, dimension(:), allocatable, target   :: test
+  
+  real, dimension(:), pointer               :: ptr_test
+  
+  allocate(test(1:100))
+  
+  ptr_test => test
+  
+  !> Testing end of !>
+
   do i = 1, 15
 
     call lista.adicionar()
