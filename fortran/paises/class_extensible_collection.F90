@@ -81,8 +81,7 @@ module class_collection
     procedure                       :: temSeguinte
     !C_Colecao methods
     procedure                       :: obterProprio
-    procedure                       :: adicionarNodoSemOValor
-    procedure                       :: paraCadaNodo
+
     procedure                       :: procuraId
     procedure                       :: obterAnterior
     procedure                       :: obterUltimo
@@ -93,22 +92,14 @@ module class_collection
     procedure                       :: tamanho
     procedure                       :: redefineId
     procedure                       :: redefinePrimeiro
-    procedure                       :: existeChave
     procedure                       :: mostrarChave
     procedure                       :: procuraChave
-    procedure                       :: adicionar
-    procedure, nopass               :: desalocarNodo
-    procedure                       :: procuraNodo
 
     !Subrotinas e funções a serem definidas
     !nas extensões da classe.
     !Define-se apenas a interface nesta classe
 
-    procedure(gen_alocarNodo), deferred, nopass     :: alocarNodo
-    procedure(gen_temValor), deferred               :: temValor
-    procedure(gen_mostrarValor), deferred           :: mostrarValor
-    procedure(gen_alocarValor), deferred            :: alocarValor
-    procedure(gen_desalocarValor), deferred         :: desalocarValor
+
 
   end type C_Colecao
 
@@ -825,10 +816,7 @@ program unitTests_lista_colecao
   !Regra: as variáveis de type são da classe extendida
   !mas as variáveis apontadores de classe são da classe abstracta
 
-  type(C_Colecao_Maca)            :: caixa
-  type(C_Maca), pointer           :: maca => null()
-  class(C_Colecao_Maca), pointer  :: nodo => null()
-  integer                         :: i 
+
 
   !Programa que demonstra as features da classe C_Colecao
   !programada no standard Fortran2003.
