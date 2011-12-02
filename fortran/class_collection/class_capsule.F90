@@ -56,9 +56,9 @@ module class_capsule
     character(len=_OBJSTR_LENGTH)       :: genero = "indefinido"
     
     !AQUI
-    class(C_Objecto), pointer           :: Objecto => null()
-    class(C_Maca), pointer              :: Maca => null()
-    !class(C_Something), pointer	:: Something => null()
+    class(C_Objecto), pointer           :: Objecto =>   null()
+    class(C_Maca), pointer              :: Maca =>      null()
+    !class(C_Something), pointer	:: Something =>     null()
 
     !métodos que apontam para um genero de tipo ou de classe
     procedure(alocaObjecto), pointer      :: aloca

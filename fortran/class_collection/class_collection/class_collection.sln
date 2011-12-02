@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "class_collection", "class_collection\class_collection.vfproj", "{A72FF08C-A868-4989-A516-C2C9CEB1A1E7}"
 EndProject
+Project("{6989167D-11E4-40FE-8C1A-2192A86A7E90}") = "class_capsule", "class_capsule\class_capsule.vfproj", "{C1841AEC-6A88-4BD3-A6A9-0E4CC2573570}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -13,6 +15,10 @@ Global
 		{A72FF08C-A868-4989-A516-C2C9CEB1A1E7}.Debug|Win32.Build.0 = Debug|Win32
 		{A72FF08C-A868-4989-A516-C2C9CEB1A1E7}.Release|Win32.ActiveCfg = Release|Win32
 		{A72FF08C-A868-4989-A516-C2C9CEB1A1E7}.Release|Win32.Build.0 = Release|Win32
+		{C1841AEC-6A88-4BD3-A6A9-0E4CC2573570}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C1841AEC-6A88-4BD3-A6A9-0E4CC2573570}.Debug|Win32.Build.0 = Debug|Win32
+		{C1841AEC-6A88-4BD3-A6A9-0E4CC2573570}.Release|Win32.ActiveCfg = Release|Win32
+		{C1841AEC-6A88-4BD3-A6A9-0E4CC2573570}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
