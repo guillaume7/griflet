@@ -6,22 +6,6 @@ module class_collection
 #define _OBJSTR_LENGTH 128
 #endif
 
-! TODO: 
-! 1 - Opção de Chave (define, search) DONE
-! 1a- Mudar o tamanho fixo das chaves de 128 caracteres para um tamanho indefinido...
-!   - Feito : criei a função pública str() que converte strings de qq tamanho
-!     em strings com o tamanho certo. DONE
-! 2 - Extender C_Colecao para C_Colecao_objecto (C_Colecao_Colecao é inválido pq C_Colecao é abstrato).
-!     Criar interfaces para os metodos associados ao Valor. DONE
-! 2a- Criar tipos derivados de objecto "Apple" e "Banana --> Conumdrum --> refactor!
-! 2b- Refactorizar tudo: Para qualquer tipo genérico "apple", "banana" ...
-!       ... existe um apontador para null na classe C_Capsula.
-!       O campo "valor" da classe C_Colecao é um apontador
-!       para null do tipo C_Capsula. DONE!!
-! 3 - Fazer programa com arrays e com directivas openmp,
-!     pensar numa alternativa ao do while( paraCada() )
-!     para criar uma zona paralelizada segura ( threadSafe ).
-
   !Regra 1: When using classes in fortran 2003, try considering that 'target' 
   !is a forbidden directive, except in 'get', 'set' and 'has' methods.
   !Regra 2: Encapsular em procedures os usos de 'associated' com retorno
@@ -39,8 +23,10 @@ module class_collection
 
   type, public                     ::  C_Colecao
 
+    private
+
     integer                        :: id = 0
-    character(len=_OBJSTR_LENGTH)  :: chave = "_"
+    character(:), allocatable      :: chave
     class(C_Colecao),  pointer     :: fundador => null()
     class(C_Colecao),  pointer     :: seguinte => null()
     class(C_Capsula),  pointer     :: valor => null()
@@ -83,7 +69,7 @@ module class_collection
     procedure                       :: mostraNodo
 
     procedure                       :: empilha
-    procedure			            :: empilhaPilha
+    procedure			                  :: empilhaPilha
 
     procedure                       :: paraCada
     procedure                       :: desempilha
@@ -91,7 +77,7 @@ module class_collection
     procedure, nopass               :: desalocaNodo
     procedure                       :: desalocaValor
     procedure                       :: tamanho
-    procedure 			            :: existeChave
+    procedure 			                :: existeChave
 
     procedure                       :: procura
     procedure                       :: procuraId
@@ -112,9 +98,9 @@ contains
 
   subroutine inicializa(self, id)
 
-    class(C_Colecao)                   :: self
+    class(C_Colecao), intent(inout)    :: self
+    integer, intent(in), optional      :: id
     class(C_Colecao), pointer          :: ptr
-    integer, optional                  :: id
 
     if ( .not. self%temPrimeiro() ) then
       if ( present( id ) ) then
@@ -127,14 +113,14 @@ contains
       write(*,*) 'Criado item numero ', self%obtemId()
     end if
 
-  end subroutine inicializa
+  end subroutine
 
   !Destructors
 
   subroutine finaliza(self)
 
-    class(C_Colecao)              :: self
-    class(C_Colecao), pointer     :: first
+    class(C_Colecao), intent(inout) :: self
+    class(C_Colecao), pointer       :: first
 
     call self%obtemPrimeiro(first)
 
@@ -145,43 +131,43 @@ contains
     write(*,*) 'Lista esvaziada.'
     write(*,*) ''
 
-  end subroutine finaliza
+  end subroutine
 
   !Sets
 
   subroutine defineId(self, id)
-    class(C_Colecao)              :: self
-    integer                       :: id
+    class(C_Colecao), intent(inout) :: self
+    integer                         :: id
     self%id = id
-  end subroutine defineId
+  end subroutine
 
   subroutine defineChave(self, chave)
-    class(C_Colecao)              :: self
-    character(len=_OBJSTR_LENGTH) :: chave
+    class(C_Colecao), intent(inout) :: self
+    character(len=*), intent(in)    :: chave
     if ( .not. self%existeChave(chave) ) then
       self%chave = trim(chave)
     else
       write(*,*) 'Error: defineChave - Chave already exists!'
     end if
-  end subroutine defineChave
+  end subroutine 
 
   subroutine defineValor (self, valor)
-    class(C_Colecao)                :: self
-    class(C_Capsula), pointer       :: valor
+    class(C_Colecao), intent(inout)       :: self
+    class(C_Capsula), intent(in),pointer  :: valor
     self%valor => valor
-  end subroutine defineValor
+  end subroutine 
 
   subroutine definePrimeiro(self, primeiro)
-    class(C_Colecao)              :: self
-    class(C_Colecao), pointer     :: primeiro
+    class(C_Colecao), intent(inout)           :: self
+    class(C_Colecao), intent(in), pointer     :: primeiro
     self%fundador => primeiro
-  end subroutine definePrimeiro
+  end subroutine
 
   subroutine defineSeguinte(self, seguinte)
-    class(C_Colecao)              :: self
-    class(C_Colecao), pointer     :: seguinte
+    class(C_Colecao), intent(inout)           :: self
+    class(C_Colecao), intent(in), pointer     :: seguinte
     self%seguinte => seguinte
-  end subroutine defineSeguinte
+  end subroutine
 
   !Gets
   !It is safer to avoid getting pointers on function returns
@@ -193,38 +179,38 @@ contains
   !para obtem escalares.
 
   subroutine obtemProprio(self, proprio)
-    class(C_Colecao), target                    :: self
+    class(C_Colecao), target, intent(in)        :: self
     class(C_Colecao), pointer, intent(out)      :: proprio
     proprio => self
-  end subroutine obtemProprio
+  end subroutine
 
   function obtemId(self) result(id)
-    class(C_Colecao)              :: self
+    class(C_Colecao), intent(in)  :: self
     integer                       :: id
     id = self%id
-  end function obtemId
+  end function
 
   function obtemChave(self) result(chave)
-    class(C_Colecao)               :: self
-    character(len=_OBJSTR_LENGTH)  :: chave
+    class(C_Colecao), intent(in)    :: self
+    character(:), allocatable       :: chave
     chave = self%chave
-  end function obtemChave
+  end function
 
   subroutine obtemValor (self, valor)
-    class(C_Colecao)                        :: self
+    class(C_Colecao), intent(in)            :: self
     class(C_Capsula), pointer, intent(out)  :: valor
     valor => self%valor
-  end subroutine obtemValor
+  end subroutine
 
   subroutine obtemPrimeiro(self, primeiro)
     class(C_Colecao)                          :: self
     class(C_Colecao), pointer, intent(out)    :: primeiro
     primeiro => self%fundador
-  end subroutine obtemPrimeiro
+  end subroutine
 
   subroutine obtemSeguinte(self, seguinte)
 
-    class(C_Colecao)                        :: self
+    class(C_Colecao), intent(in)            :: self
     class(C_Colecao), pointer, intent(out)  :: seguinte
 
     if ( self%temSeguinte() ) then
@@ -233,13 +219,13 @@ contains
       nullify( seguinte )
     end if
 
-  end subroutine obtemSeguinte
+  end subroutine
 
   !Has methods
 
   function temId(self) result(tem)
 
-    class(C_Colecao)             :: self
+    class(C_Colecao), intent(in)  :: self
     logical                       :: tem
 
     if ( self%id .ne. 0 ) then
@@ -248,11 +234,11 @@ contains
       tem = .false.
     endif
 
-  end function temId
+  end function
 
   function temChave(self) result(tem)
     
-    class(C_Colecao)             :: self
+    class(C_Colecao), intent(in)  :: self
     logical                       :: tem
 
     if ( trim(self%chave) .ne. "_" ) then
@@ -261,21 +247,21 @@ contains
       tem = .false.
     endif
 
-  end function temChave
+  end function
 
   function temValor (self) result(tem)
-      class(C_Colecao)              :: self
+      class(C_Colecao), intent(in)  :: self
       logical                       :: tem
       if ( associated(self%valor) ) then
         tem = .true.
       else
         tem = .false.
       endif
-  end function temValor
+  end function
 
   function temPrimeiro(self) result(tem)
   
-    class(C_Colecao)             :: self
+    class(C_Colecao), intent(in)  :: self
     logical                       :: tem
 
     if ( associated( self%fundador ) ) then
@@ -284,11 +270,11 @@ contains
       tem = .false.
     end if
 
-  end function temPrimeiro
+  end function
 
   function temSeguinte(self) result(tem)
 
-    class(C_Colecao)               :: self
+    class(C_Colecao), intent(in)   :: self
     logical                        :: tem
 
     if ( associated( self%seguinte ) ) then     
@@ -297,13 +283,13 @@ contains
       tem = .false.
     end if
 
-  end function temSeguinte
+  end function
 
   !Show
   subroutine mostraId(self)
 
-    class(C_Colecao)          :: self
-    class(C_Colecao), pointer :: ptr
+    class(C_Colecao), intent(inout) :: self
+    class(C_Colecao), pointer       :: ptr
 
     call self%obtemAnterior(ptr)
 
@@ -324,25 +310,25 @@ contains
       write(*,*) 'O item seguinte tem numero', ptr%obtemId()
     end if
 
-  end subroutine mostraId
+  end subroutine
 
   subroutine mostraChave(self)
-    class(C_Colecao)                :: self
+    class(C_Colecao), intent(in)                :: self
     write(*,*) 'a chave é "', trim(self%obtemChave()),'".'
-  end subroutine mostraChave
+  end subroutine
 
   subroutine mostraValor (self)
-    class(C_Colecao)                :: self
+    class(C_Colecao), intent(inout) :: self
     class(C_Capsula), pointer       :: valor
     call self%obtemValor( valor )
     call valor%mostra()
-  end subroutine mostraValor
+  end subroutine
 
   !C_Colecao methods
 
   subroutine mostraNodo(self)
 
-    class(C_Colecao)          :: self
+    class(C_Colecao), intent(inout) :: self
 
     call self%mostraId()
     if ( self%temChave() ) then
@@ -352,11 +338,11 @@ contains
       call self%mostraValor()
     end if
 
-  end subroutine mostraNodo
+  end subroutine
 
   subroutine mostra(self)
 
-    class(C_Colecao)          :: self
+    class(C_Colecao), intent(inout)          :: self
     class(C_Colecao), pointer :: item => null()
 
     do while ( self%paraCada(item) )
@@ -368,13 +354,13 @@ contains
     write(*,*) 'Lista mostrada.'
     write(*,*) ''
 
-  end subroutine mostra
+  end subroutine
 
   subroutine empilha(self, valor, chave)
 
-    class(C_Colecao)                            :: self
-    class(C_Capsula), pointer                   :: valor
-    character(len=_OBJSTR_LENGTH), optional     :: chave
+    class(C_Colecao), intent(inout)             :: self
+    class(C_Capsula), intent(in), pointer       :: valor
+    character(len=*), intent(in), optional      :: chave
     class(C_Colecao), pointer                   :: nodo => null()
 
     if ( present( chave ) ) then
@@ -390,13 +376,13 @@ contains
       write(*,*) 'Erro: a capsula a empilha na pilha aponta para null()'
     end if
 
-  end subroutine empilha
+  end subroutine
 
   subroutine empilhaPilha(self, nodo, chave)
 
-    class(C_Colecao)                                      :: self
+    class(C_Colecao), intent(inout)                       :: self
     class(C_Colecao), pointer, intent(inout), optional    :: nodo
-    character(len=_OBJSTR_LENGTH), optional		        :: chave
+    character(len=*), optional, intent(in)                :: chave
     class(C_Colecao), pointer                             :: ultimo, new => null(), primeiro
 
     if ( present( nodo ) ) then
@@ -433,8 +419,8 @@ contains
         end if
 
         if ( present( chave ) ) then
-	  call nodo%defineChave(chave)
-	end if
+          call nodo%defineChave(chave)
+        end if
 
       else
 
@@ -457,8 +443,8 @@ contains
         call new%definePrimeiro( primeiro )
         call ultimo%defineSeguinte( new )
         if ( present( chave ) ) then
-	  call new%defineChave(chave)
-	end if
+	        call new%defineChave(chave)
+	      end if
         write(*,*) 'Criado item numero ', new%obtemId()
     
       end if
@@ -474,7 +460,7 @@ contains
     !usage: %%%
     !usage: end do
 
-    class(C_Colecao)                             	:: self
+    class(C_Colecao), intent(inout)             	:: self
     class(C_Colecao), pointer, intent(inout)     	:: node
     class(C_Capsula), pointer, optional, intent(out)	:: valor
     logical                                      	:: keepup    
@@ -509,8 +495,8 @@ contains
   end function paraCada
 
   function procuraId(self, id, nodo) result(found)
-    class(C_Colecao)                            :: self
-    integer                                     :: id
+    class(C_Colecao), intent(inout)             :: self
+    integer, intent(in)                         :: id
     class(C_Colecao), pointer, intent(out)      :: nodo
     logical					:: found
     class(C_Colecao), pointer		        :: item => null()
@@ -528,11 +514,11 @@ contains
       write(*,*) 'O id', id,'que procura é superior ao tamanho da coleção', self%tamanho()
       nullify( nodo )
     end if
-  end function procuraId
+  end function
 
   subroutine obtemAnterior(self, anterior)
 
-    class(C_Colecao)                            :: self
+    class(C_Colecao), intent(inout)             :: self
     class(C_Colecao), pointer, intent(out)      :: anterior
     class(C_Colecao), pointer                   :: seguinte
 
@@ -555,11 +541,11 @@ contains
 
     endif
 
-  end subroutine obtemAnterior
+  end subroutine
 
   subroutine obtemUltimo(self, ultimo)
 
-    class(C_Colecao)                              :: self
+    class(C_Colecao), intent(inout)               :: self
     class(C_Colecao), pointer, intent(inout)      :: ultimo
 
     call self%obtemPrimeiro(ultimo)
@@ -568,13 +554,13 @@ contains
       call ultimo%obtemSeguinte(ultimo)
     end do
 
-  end subroutine obtemUltimo
+  end subroutine
 
 
   subroutine desempilha(self)
 
-    class(C_Colecao)             :: self
-    class(C_Colecao), pointer    :: ultimo, penultimo, ptr
+    class(C_Colecao), intent(inout)   :: self
+    class(C_Colecao), pointer         :: ultimo, penultimo, ptr
 
     call self%obtemUltimo(ultimo)
     call ultimo%obtemAnterior(penultimo)
@@ -594,10 +580,10 @@ contains
     nullify( ptr )
     call penultimo%defineSeguinte( ptr )
 
-  end subroutine desempilha
+  end subroutine
 
   subroutine desalocaValor( self )
-    class(C_Colecao)                :: self
+    class(C_Colecao), intent(inout) :: self
     class(C_Capsula), pointer       :: valor
     if ( self%temValor() ) then
       call self%obtemValor( valor )
@@ -605,13 +591,13 @@ contains
       deallocate( valor )
       nullify( self%valor )
     end if
-  end subroutine desalocaValor
+  end subroutine
 
   function tamanho(self) result(tam)
 
-    class(C_Colecao)             :: self
-    class(C_Colecao), pointer    :: item => null()
-    integer                      :: tam
+    class(C_Colecao), intent(inout)   :: self
+    integer                           :: tam
+    class(C_Colecao), pointer         :: item => null()
 
     tam = 0
 
@@ -619,13 +605,13 @@ contains
       tam = tam + 1 
     enddo
 
-  end function tamanho
+  end function
 
   subroutine redefineId(self)
 
-    class(C_Colecao)             :: self
-    class(C_Colecao), pointer    :: item => null()
-    integer                      :: i
+    class(C_Colecao), intent(inout) :: self
+    class(C_Colecao), pointer       :: item => null()
+    integer                         :: i
 
     i = 1
     do while ( self%paraCada( item ) )
@@ -633,13 +619,13 @@ contains
       i = i + 1
     end do
 
-  end subroutine redefineId
+  end subroutine
 
   subroutine redefinePrimeiro( self, primeiro )
 
-    class(C_Colecao)                            :: self
-    class(C_Colecao), pointer, intent(in)       :: primeiro
-    class(C_Colecao), pointer                    :: item => null()
+    class(C_Colecao), intent(inout)               :: self
+    class(C_Colecao), pointer, intent(in)         :: primeiro
+    class(C_Colecao), pointer                     :: item => null()
 
     if ( associated( primeiro ) ) then
       do while ( self%paraCada( item ) )
@@ -649,14 +635,14 @@ contains
       write(*,*) 'Error: redefinePrimeiro, passed argument points to null.'
     end if
 
-  end subroutine redefinePrimeiro
+  end subroutine
 
   function existeChave(self, chave) result(existe)
 
-    class(C_Colecao)				:: self
-    character(len=_OBJSTR_LENGTH),intent(in)	:: chave
-    logical					:: existe
-    class(C_Colecao), pointer			:: item => null()
+    class(C_Colecao), intent(inout)   :: self
+    character(len=*),intent(in)       :: chave
+    logical                           :: existe
+    class(C_Colecao), pointer         :: item => null()
 
     existe = .false.
     do while ( self%paraCada( item ) )
@@ -665,15 +651,15 @@ contains
       end if
     end do
 
-  end function existeChave
+  end function
 
   function procuraChave(self, chave, resultado) result(found)
 
-    class(C_Colecao)				:: self
-    character(len=_OBJSTR_LENGTH), intent(in)	:: chave
-    class(C_Colecao), pointer, intent(inout)	:: resultado
-    logical					:: found
-    class(C_Colecao), pointer			:: item => null()
+    class(C_Colecao), intent(inout)             :: self
+    character(len=*), intent(in)	              :: chave
+    class(C_Colecao), pointer, intent(inout)	  :: resultado
+    logical					                            :: found
+    class(C_Colecao), pointer                   :: item => null()
     
     found = .false.
     nullify( resultado )
@@ -686,7 +672,7 @@ contains
       end if
     end do
 
-  end function procuraChave
+  end function
 
   subroutine alocaNodo ( ptr ) !nopass
     class(C_Colecao), pointer, intent(inout)	:: ptr
@@ -695,7 +681,7 @@ contains
       write(*,*) 'Warning: alocaNodo - argument is already associated. Nullifying ...'
     end if
     allocate( ptr )
-  end subroutine alocaNodo
+  end subroutine
 
   subroutine desalocaNodo ( ptr ) !nopass
     class(C_Colecao), pointer, intent(inout)	:: ptr
@@ -705,15 +691,15 @@ contains
     else
       write(*,*) 'Warning: desalocaNodo - argument already points to null.'
     endif
-  end subroutine desalocaNodo
+  end subroutine
 
   function procura(self, resultado, valor, id, chave) result(found)
-    class(C_Colecao)					                :: self
-    class(C_Colecao), pointer, intent(out)      	    :: resultado
+    class(C_Colecao), intent(inout)                     :: self
+    class(C_Colecao), pointer, intent(out)      	      :: resultado
     class(C_Capsula), pointer, intent(out), optional    :: valor
-    integer, optional					:: id
-    character(len=_OBJSTR_LENGTH), optional		:: chave
-    logical						:: found
+    integer, optional, intent(in)                       ::  id
+    character(len=*), optional, intent(in)              :: chave
+    logical                                             :: found
     if ( present( id ) ) then
       found = self%procuraId( id, resultado )      
     elseif ( present( chave ) ) then
@@ -730,7 +716,7 @@ contains
         nullify( valor )
       endif
     endif
-  end function procura
+  end function
 
   !-----------end type-bound procedures type C_Colecao----------!
 
@@ -752,7 +738,7 @@ program unitTests_lista_colecao
   class(C_Colecao), pointer         :: nodo => null( )
   class(C_Capsula), pointer         :: capsula => null( )
   class(C_Maca), pointer            :: maca => null( )
-  class(C_Objecto), pointer	    :: objecto => null( )
+  class(C_Objecto), pointer         :: objecto => null( )
   integer                           :: i
 
   !Programa que demonstra as features da classe C_Colecao
@@ -777,11 +763,11 @@ program unitTests_lista_colecao
 
   !Cria e adiciona 1 elemento com uma chave associada.
   call encapsula( maca, capsula )
-  call caixa%empilha( capsula, chave = str('Maçã especial') )
+  call caixa%empilha( capsula, chave = 'Maçã especial' )
 
   !Procura o elemento da colecao contendo aquela chave
   !e mostra elemento
-  if ( caixa%procura( nodo, chave = str('Maçã especial') ) ) then
+  if ( caixa%procura( nodo, chave = 'Maçã especial' ) ) then
     call nodo%mostraNodo( )
   end if
 
@@ -799,7 +785,7 @@ program unitTests_lista_colecao
 
   !Encapsula um novo outro tipo de objecto numa nova capsula e empilha na mesma caixa
   call encapsula( objecto, capsula )
-  call caixa%empilha( capsula, chave = str('Determinado e particular objecto') )
+  call caixa%empilha( capsula, chave = 'Determinado e particular objecto' )
 
   !Mostra toda a colecao de objectos
   call caixa%mostra( )
