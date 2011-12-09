@@ -1,16 +1,10 @@
 module class_capsule
 
-  !AQUI
   !use class_something
 
 #ifndef _OBJSTR_LENGTH
 #define _OBJSTR_LENGTH 128
 #endif
-
-! TODO:
-!       encapsula
-!       desencapsula
-!       reencapsula
 
   implicit none
 
@@ -24,25 +18,27 @@ module class_capsule
  ! Regra 1: Cada variável derivada do tipo C_Objecto tem que ter
  ! o campo tipoObj inicializado com o nome do tipo.
   type, public :: C_Objecto
-    character(len=_OBJSTR_LENGTH)       :: tipoObj = "C_Objecto"
+    !character(:), allocatable          :: tipoObj = "C_Objecto"
+    character(:), allocatable           :: tipoObj
   contains
     procedure                           :: defineTipoObj
     procedure                           :: obtemTipoObj
     procedure                           :: mostraTipoObj
-  end type C_Objecto
+  end type
 
   !----------------end class C_Objecto------------------------------!
 
   !----------------class C_Maca------------------------------!
 
   type, public, extends(C_Objecto)      :: C_Maca
-    character(len=_OBJSTR_LENGTH)       :: categoria = "Categoria Indefinida"
+    !character(:), allocatable       :: categoria = "Categoria Indefinida"
+    character(:), allocatable           :: categoria
   contains
     procedure                           :: defineCategoria
     procedure                           :: obtemCategoria
     procedure                           :: temCategoria
     procedure                           :: mostraCategoria
-  end type C_Maca
+  end type
 
   !-------------end class C_Maca-----------------------------!
 
@@ -51,13 +47,13 @@ module class_capsule
 
   !----------------class C_Capsula------------------------------!
 
-  type, public                          :: C_Capsula
+  type, public                            :: C_Capsula
 
-    character(len=_OBJSTR_LENGTH)       :: genero = "indefinido"
+    !character(:), allocatable       :: genero = "indefinido"
+    character(:), allocatable             :: genero
     
-    !AQUI
-    class(C_Objecto), pointer           :: Objecto =>   null()
-    class(C_Maca), pointer              :: Maca =>      null()
+    class(C_Objecto), pointer             :: Objecto =>   null()
+    class(C_Maca), pointer                :: Maca =>      null()
     !class(C_Something), pointer	:: Something =>     null()
 
     !métodos que apontam para um genero de tipo ou de classe
@@ -73,200 +69,191 @@ module class_capsule
     procedure                             :: obtemGenero
     procedure                             :: temGenero
     procedure                             :: mostraGenero
-    procedure				  :: limpaGenero
+    procedure                             :: limpaGenero
 
     !metodos que abrangem todos os generos
     procedure                             :: limpaCapsula
     procedure                             :: mostraCapsula
 
-  end type C_Capsula
+  end type
 
-  !AQUI
   public :: encapsula
   interface encapsula
     module procedure encapsulaObjecto
     module procedure encapsulaMaca
     !module procedure encapsulaSomething
-  end interface encapsula
+  end interface
 
-  !AQUI
   public :: reencapsula
   interface reencapsula
     module procedure reencapsulaObjecto
     module procedure reencapsulaMaca
     !module procedure reencapsulaSomething
-  end interface reencapsula
+  end interface
 
-  !AQUI
   public :: desencapsula
   interface desencapsula
     module procedure desencapsulaObjecto
     module procedure desencapsulaMaca
     !module procedure desencapsulaSomething
-  end interface desencapsula
+  end interface
 
   !-------------end class C_Capsula-----------------------------!
-
-  public                :: str
 
 contains
 
   !----------------class-bound procedures of class C_Objecto--------------!
 
-  subroutine defineTipoObj(self, str)
-    class(C_Objecto)                 :: self
-    character(len=_OBJSTR_LENGTH)    :: str
-    self%tipoObj = str
-  end subroutine defineTipoObj
+  subroutine defineTipoObj(this, str)
+    class(C_Objecto), intent(inout)   :: this
+    character(len=*), intent(in)      :: str
+    this%tipoObj = str
+  end subroutine
 
-  function obtemTipoObj(self) result(str)
-    class(C_Objecto), intent(in)     :: self
-    character(len=_OBJSTR_LENGTH)    :: str
-    str = self%tipoObj
-  end function obtemTipoObj
+  function obtemTipoObj(this) result(str)
+    class(C_Objecto), intent(in)      :: this
+    character(:), allocatable         :: str
+    str = this%tipoObj
+  end function
 
-  subroutine mostraTipoObj(self)
-    class(C_Objecto)                    :: self
-    character(len=_OBJSTR_LENGTH)       :: str
-    str = self%obtemTipoObj()
-    write(*,*) 'Elemento do tipo ', trim( self%obtemTipoObj() )
-  end subroutine mostraTipoObj
+  subroutine mostraTipoObj(this)
+    class(C_Objecto), intent(in)      :: this
+    character(:), allocatable         :: str
+    str = this%obtemTipoObj()
+    write(*,*) 'Elemento do tipo ', trim( this%obtemTipoObj() )
+  end subroutine
 
   !----------------end of class-bound procedures of class C_Objecto-------!
 
   !----------class-bound procedures of class C_Maca---------------!
 
-  subroutine defineCategoria(self, tipo)
-    class(C_Maca)                   :: self
-    integer                         :: tipo
+  subroutine defineCategoria(this, tipo)
+    class(C_Maca), intent(inout)    :: this
+    integer, intent(in)             :: tipo
     if ( tipo .eq. 1 ) then
-      self%categoria = Str("Starking")
+      this%categoria = "Starking"
     elseif ( tipo .eq. 2 ) then
-      self%categoria = Str("Golden")
+      this%categoria = "Golden"
     elseif ( tipo .eq. 3 ) then
-      self%categoria = Str("Reinette")
+      this%categoria = "Reinette"
     else
-      self%categoria = Str("Appleseed")
+      this%categoria = "Appleseed"
     endif
-  end subroutine defineCategoria
+  end subroutine
 
-  function obtemCategoria(self) result(acategoria)
-    class(C_Maca)                   :: self
-    character(len=_OBJSTR_LENGTH)   :: acategoria
-    acategoria = self%categoria
-  end function obtemCategoria
+  function obtemCategoria(this) result(acategoria)
+    class(C_Maca), intent(in)   :: this
+    character(:), allocatable   :: acategoria
+    acategoria = this%categoria
+  end function
 
-  function temCategoria(self) result(tem)
-    class(C_Maca)                   :: self
+  function temCategoria(this) result(tem)
+    class(C_Maca), intent(in)       :: this
     logical                         :: tem
-    if ( self%categoria .eq. "Categoria Indefinida" ) then
+    if ( this%categoria .eq. "Categoria Indefinida" ) then
       tem = .false.
     else
       tem = .true.
     end if
-  end function temCategoria
+  end function
 
-  subroutine mostraCategoria(self)
-    class(C_Maca)                   :: self
-    write(*,*) 'Maca de categoria ', trim( self%obtemCategoria() )
-  end subroutine mostraCategoria
+  subroutine mostraCategoria(this)
+    class(C_Maca), intent(in)      :: this
+    write(*,*) 'Maca de categoria ', trim( this%obtemCategoria() )
+  end subroutine
 
   !----------end class-bound procedures of class C_Maca-----------!
 
   !----------class-bound and pointer procedures of class C_Capsula------------!
 
-  !AQUI
-  subroutine defineGenero( self, strgenero )
-    class(C_Capsula)                    :: self
-    character(len=_OBJSTR_LENGTH)       :: strgenero
+  subroutine defineGenero( this, strgenero )
+    class(C_Capsula), intent(inout)     :: this
+    character(len=*), intent(in)        :: strgenero
     select case ( strgenero )
       case ('Objecto')
-        self%tem        => temObjecto
-        self%aloca      => alocaObjecto
-        self%desaloca   => desalocaObjecto
-        self%mostra     => mostraObjecto
+        this%tem        => temObjecto
+        this%aloca      => alocaObjecto
+        this%desaloca   => desalocaObjecto
+        this%mostra     => mostraObjecto
       case ('Maca')
-        self%tem        => temMaca
-        self%aloca      => alocaMaca
-        self%desaloca   => desalocaMaca
-        self%mostra     => mostraMaca
+        this%tem        => temMaca
+        this%aloca      => alocaMaca
+        this%desaloca   => desalocaMaca
+        this%mostra     => mostraMaca
       !case ('Something')
-      !  self%tem        => temSomething
-      !  self%aloca      => alocaSomething
-      !  self%desaloca   => desalocaSomething
-      !  self%mostra     => mostraSomething
+      !  this%tem        => temSomething
+      !  this%aloca      => alocaSomething
+      !  this%desaloca   => desalocaSomething
+      !  this%mostra     => mostraSomething
       case default
-        nullify( self%tem )
-        nullify( self%aloca )
-        nullify( self%desaloca )
-        nullify( self%mostra )
+        nullify( this%tem )
+        nullify( this%aloca )
+        nullify( this%desaloca )
+        nullify( this%mostra )
     end select
-    self%genero = strgenero
-  end subroutine defineGenero
+    this%genero = strgenero
+  end subroutine
 
-  subroutine obtemGenero( self, strgenero )
-    class(C_Capsula)                    :: self
-    character(len=_OBJSTR_LENGTH)       :: strgenero
-    strgenero = self%genero
-  end subroutine obtemGenero
+  function obtemGenero( this ) result( strgenero )
+    class(C_Capsula), intent(in)         :: this
+    character(:), allocatable           :: strgenero
+    strgenero = this%genero
+  end function
 
-  function temGenero( self ) result(tem)
-    class(C_Capsula)                    :: self
+  function temGenero( this ) result(tem)
+    class(C_Capsula), intent(in)        :: this
     logical                             :: tem
-    character(len=_OBJSTR_LENGTH)       :: strgenero
-    call self%obtemGenero( strgenero )
+    character(:), allocatable           :: strgenero
+    strgenero = this%obtemGenero( )
     if ( trim(strgenero) .eq. 'indefinido' ) then
       tem = .false.
     else
       tem = .true.
     end if
-  end function temGenero
+  end function
 
-  subroutine mostraGenero( self, strgenero )
-    class(C_Capsula)                    	:: self
-    character(len=_OBJSTR_LENGTH), optional     :: strgenero
-    character(len=_OBJSTR_LENGTH)		:: origenero
-    call self%obtemGenero( origenero )
-    if ( present(strgenero) ) then
-      call self%defineGenero( strgenero )
-      if ( associated ( self%mostra ) ) call self%mostra()
-      call self%defineGenero( origenero )
+  subroutine mostraGenero( this, strgenero )
+    class(C_Capsula), intent(inout)         :: this
+    character(len=*), intent(in), optional  :: strgenero
+    character(:), allocatable               :: origenero
+    origenero = this%obtemGenero( )
+    if ( present( strgenero ) ) then
+      call this%defineGenero( strgenero )
+      if ( associated ( this%mostra ) ) call this%mostra()
+      call this%defineGenero( origenero )
     else
-        write(*,*) 'O presente genero da capsula e ', trim(origenero)
+        write(*,*) 'O presente genero da capsula e ', trim( origenero )        
     end if
-  end subroutine mostraGenero
+  end subroutine
 
-  subroutine limpaGenero( self, strgenero )
-    class(C_Capsula)			:: self
-    character(len=_OBJSTR_LENGTH)	:: strgenero
-    character(len=_OBJSTR_LENGTH)	:: stroriginal
-    call self%obtemGenero( stroriginal )
-    call self%defineGenero( strgenero )
-    if ( associated ( self%tem ) ) then
-      if ( self%tem() ) call self%desaloca()
+  subroutine limpaGenero( this, strgenero )
+    class(C_Capsula), intent(inout) :: this
+    character(len=*), intent(in)    :: strgenero
+    character(:), allocatable       :: stroriginal
+    stroriginal = this%obtemGenero( )
+    call this%defineGenero( strgenero )
+    if ( associated ( this%tem ) ) then
+      if ( this%tem() ) call this%desaloca()
     end if
-    call self%defineGenero( stroriginal )
-  end subroutine limpaGenero
+    call this%defineGenero( stroriginal )
+  end subroutine
 
-  !AQUI
-  subroutine limpaCapsula ( self )
-    class(C_Capsula)			:: self
-    call self%limpaGenero( Str('Objecto') )
-    call self%limpaGenero( Str('Maca') )
-    !call self%limpaGenero( Str('Something') )
-    call self%limpaGenero( Str('Indefinido') )
-  end subroutine limpaCapsula
+  subroutine limpaCapsula ( this )
+    class(C_Capsula), intent(inout)    :: this
+    call this%limpaGenero( 'Objecto' )
+    call this%limpaGenero( 'Maca' )
+    !call this%limpaGenero( 'Something') )
+    call this%limpaGenero( 'Indefinido' )
+  end subroutine
 
-  !AQUI
-  subroutine mostraCapsula ( self )
-    class(C_Capsula)			:: self
-    call self%mostraGenero( Str('Objecto') )
-    call self%mostraGenero( Str('Maca') )
-    !call self%mostraGenero( Str('Something') )
-    call self%mostraGenero( Str('Indefinido') )
-  end subroutine mostraCapsula  
+  subroutine mostraCapsula ( this )
+    class(C_Capsula), intent(inout)   :: this
+    call this%mostraGenero( 'Objecto' )
+    call this%mostraGenero( 'Maca' )
+    !call this%mostraGenero( 'Something' )
+    call this%mostraGenero( 'Indefinido' )
+  end subroutine
 
-!AQUI
 #undef _VALOR_
 #define _VALOR_ Objecto
 #include "C_Capsula_contains.inc"
@@ -280,12 +267,6 @@ contains
 !#include "C_Capsula_contains.inc"
 
   !-----end class-bound and pointer procedures of class C_Capsula--------!
-
-  function str(inStr) result(sizedStr)
-    character(len=*), intent(in)        :: inStr
-    character(len=_OBJSTR_LENGTH)       :: sizedStr
-    sizedStr = trim(inStr)
-  end function str
 
 end module class_capsule
 
@@ -302,12 +283,14 @@ program unitTests_capsula
   !mas as variáveis apontadores de classe são da classe abstracta
 
   class(C_Capsula), pointer         :: capsula => null()
+  !type(C_Capsula)                  :: capsula
   class(C_Maca), pointer            :: maca => null()
   class(C_Objecto), pointer         :: objecto => null()
   integer                           :: i
 
   !conceito: aloca uma nova maca dentro duma nova capsula
   call encapsula( maca, capsula )
+  !capsula = encapsula( maca )
 
   !conceito: retorna o presente genero da capsula
   !resposta: 'Maca'
@@ -326,11 +309,12 @@ program unitTests_capsula
   !conceito: aloca uma nova maca dentro duma nova capsula
   !e muda o genero da capsula para 'maca'
   call encapsula( maca, capsula )
+  !capsula = encapsula( maca )
 
-  !conceito: desaloca a maca e aloca uma nova maca dentro da mesma capsula
+  !conceito: desaloca a maca da capsula e aloca uma nova maca dentro da mesma capsula
   call reencapsula( maca, capsula )
 
-  !conceito: desaloca a maca e insere a nova maca dentro da mesma capsula
+  !conceito: desaloca a maca da capsula e insere a nova maca dentro da mesma capsula
   allocate( maca )
   call reencapsula( maca, capsula )
   nullify( maca )
